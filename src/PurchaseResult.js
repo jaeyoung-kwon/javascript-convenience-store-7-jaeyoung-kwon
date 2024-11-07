@@ -88,6 +88,8 @@ class PurchaseResult {
 
       return Math.floor(priceSum - discountPriceSum);
     }
+
+    return priceSum;
   }
 }
 
