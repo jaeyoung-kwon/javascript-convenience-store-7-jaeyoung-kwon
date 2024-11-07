@@ -1,13 +1,13 @@
-import { Console } from '@woowacourse/mission-utils';
-
 class POSMachine {
   static scanningProduct(promotions, productInventory, purchaseQuantity) {
     const totalPromotion = promotions.buy + promotions.get;
     if (this.#hasInsufficientPromotionQuantity(totalPromotion, productInventory, purchaseQuantity)) {
-      const insufficientPromotionQuantity = productInventory.promotionStock % totalPromotion;
+      const insufficientPromotionQuantity = totalPromotion - (purchaseQuantity % totalPromotion);
 
-      Console.print(insufficientPromotionQuantity);
+      return { state: 'insufficientPromotionQuantity', insufficientPromotionQuantity, freeQuantity: promotions.get };
     }
+
+    return { stat: 'OK' };
   }
 
   static #hasInsufficientPromotionQuantity(totalPromotion, productInventory, purchaseQuantity) {

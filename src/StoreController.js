@@ -65,13 +65,23 @@ class StoreController {
   }
 
   #scanningProductsWithPOS(products) {
-    products.forEach(({ name, quantity }) => {
+    products.forEach(async ({ name, quantity }) => {
       const productInventory = this.convenienceStore.inventory[name];
-      POSMachine.scanningProduct(
+      const scanResult = POSMachine.scanningProduct(
         this.convenienceStore.promotions[productInventory.promotion],
         productInventory,
         quantity,
       );
+
+      if (scanResult.state === 'insufficientPromotionQuantity') {
+        const input = await Input.getInsufficientPromotionAnswer(
+          name,
+          scanResult.insufficientPromotionQuantity,
+          scanResult.freeQuantity,
+        )((input) => input);
+
+        console.log(input);
+      }
     });
   }
 }

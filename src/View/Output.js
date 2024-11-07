@@ -17,7 +17,6 @@ class Output {
           `- ${name} ${numberToLocaleString(stock.price)}원 ${this.#getStockMessage(stock.regularStock)}개`,
         );
     });
-    Console.print('');
   }
 
   static #getStockMessage(stock) {
