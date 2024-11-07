@@ -1,3 +1,4 @@
+import { DateTimes } from '@woowacourse/mission-utils';
 import * as fs from 'fs';
 
 class POSMachine {
@@ -14,14 +15,17 @@ class POSMachine {
 
   #parsePromotions(data) {
     const [, ...lines] = data.split('\n').filter((line) => line.trim() !== '');
+    const now = DateTimes.now();
 
     const promotions = {};
     lines.forEach((line) => {
       const [name, buy, get, startDate, endDate] = line.split(',');
 
-      promotions[name] = this.#createPromotion(buy, get, startDate, endDate);
+      if (new Date(startDate).getTime() <= now.getTime() && now.getTime() <= new Date(endDate).getTime())
+        promotions[name] = this.#createPromotion(buy, get, startDate, endDate);
     });
 
+    console.log(promotions);
     return promotions;
   }
 
