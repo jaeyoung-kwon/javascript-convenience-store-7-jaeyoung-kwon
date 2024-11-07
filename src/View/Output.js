@@ -25,6 +25,9 @@ class Output {
     this.#printPurchaseProducts(inventory, result.finalPurchaseProducts);
     if (result.freeGetProducts) this.#printFreeProducts(inventory, result.freeGetProducts);
     Console.print('==============================');
+    Console.print(`총구매액\t\t${result.getTotalQuantity()}\t${result.getTotalPrice(inventory)}\t`);
+    Console.print(`행사할인\t\t\t-${result.getPromotionDiscountPrice(inventory)}\t`);
+    Console.print(`멤버십할인\t\t\t-${result.getMembershipDiscountPrice(inventory)}\t`);
   }
 
   static #printPurchaseProducts(inventory, purchaseProducts) {
