@@ -81,7 +81,8 @@ class StoreController {
           scanResult.freeQuantity,
         );
 
-      if (scanResult.state === 'promotionStockInsufficient') console.log(scanResult);
+      if (scanResult.state === 'promotionStockInsufficient')
+        return this.#getUpdatedProductWithoutDiscount(name, quantity, scanResult.insufficientQuantity);
     });
 
     const answeredProduct = await Promise.all(productPromises);
@@ -100,11 +101,25 @@ class StoreController {
     return { name, quantity };
   }
 
+  async #getUpdatedProductWithoutDiscount(name, quantity, insufficientQuantity) {
+    const answer = await this.#getValidatedPromotionStockInsufficientAnswer(name, insufficientQuantity);
+  }
+
   #getValidatedInsufficientPromotionAnswer(name, insufficientPromotionQuantity, freeQuantity) {
     return Input.getInsufficientPromotionAnswer(
       name,
       insufficientPromotionQuantity,
       freeQuantity,
+    )((input) => {
+      this.#validateYNInputForm(input);
+      return input;
+    });
+  }
+
+  #getValidatedPromotionStockInsufficientAnswer(name, insufficientQuantity) {
+    return Input.getPromotionStockInsufficientAnswer(
+      name,
+      insufficientQuantity,
     )((input) => {
       this.#validateYNInputForm(input);
       return input;
