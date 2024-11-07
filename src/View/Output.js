@@ -28,6 +28,7 @@ class Output {
     Console.print(`총구매액\t\t${result.getTotalQuantity()}\t${result.getTotalPrice(inventory)}\t`);
     Console.print(`행사할인\t\t\t-${result.getPromotionDiscountPrice(inventory)}\t`);
     Console.print(`멤버십할인\t\t\t-${result.getMembershipDiscountPrice(inventory)}\t`);
+    Console.print(`내실돈\t\t\t${result.getFinalPurchasePrice(inventory, isMembershipDiscount)}\t`);
   }
 
   static #printPurchaseProducts(inventory, purchaseProducts) {
