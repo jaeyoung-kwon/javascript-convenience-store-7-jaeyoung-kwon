@@ -5,8 +5,12 @@ import Input from './View/Input.js';
 import Output from './View/Output.js';
 
 class StoreController {
+  #convenienceStore;
+  #posMachine;
+
   constructor() {
-    this.convenienceStore = new ConvenienceStore();
+    this.#convenienceStore = new ConvenienceStore();
+    this.#posMachine = new POSMachine();
   }
 
   async init() {
@@ -19,7 +23,7 @@ class StoreController {
 
   #printInit() {
     Output.printWelcomeMessage();
-    Output.printInventory(this.convenienceStore.inventory);
+    Output.printInventory(this.#convenienceStore.inventory);
   }
 
   #getValidatedPurchaseProducts() {
@@ -45,7 +49,7 @@ class StoreController {
   }
 
   #validatePurchaseProducts(purchaseProducts) {
-    const { inventory } = this.convenienceStore;
+    const { inventory } = this.#convenienceStore;
 
     purchaseProducts.forEach(({ name, quantity }) => {
       const inventoryProduct = inventory[name];
@@ -66,20 +70,18 @@ class StoreController {
 
   async #scanningProductsWithPOS(products) {
     const productPromises = products.map(async ({ name, quantity }) => {
-      const productInventory = this.convenienceStore.inventory[name];
-      const scanResult = POSMachine.scanningProduct(
-        this.convenienceStore.promotions[productInventory.promotion],
-        productInventory,
-        quantity,
-      );
+      const productInventory = this.#convenienceStore.inventory[name];
+      const scanResult = this.#posMachine.scanningProduct(productInventory, quantity);
 
       if (scanResult.state === 'insufficientPromotionQuantity')
         return this.#getUpdatedProductWithPromotion(
           name,
           quantity,
-          scanResult.insufficientPromotionQuantity,
+          scanResult.insufficientQuantity,
           scanResult.freeQuantity,
         );
+
+      if (scanResult.state === 'promotionStockInsufficient') console.log(scanResult);
     });
 
     const answeredProduct = await Promise.all(productPromises);
