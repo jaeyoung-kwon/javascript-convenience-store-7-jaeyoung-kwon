@@ -22,13 +22,13 @@ class StoreController {
     Output.printInventory(this.convenienceStore.inventory);
   }
 
-  async #getValidatedPurchaseProducts() {
-    const purchaseProductsInput = await Input.getPurchaseProducts();
+  #getValidatedPurchaseProducts() {
+    return Input.getPurchaseProducts()((input) => {
+      const parsedPurchaseProducts = this.#parsePurchaseProducts(input);
+      this.#validatePurchaseProducts(parsedPurchaseProducts);
 
-    const parsedPurchaseProducts = this.#parsePurchaseProducts(purchaseProductsInput);
-    this.#validatePurchaseProducts(parsedPurchaseProducts);
-
-    return parsedPurchaseProducts;
+      return parsedPurchaseProducts;
+    });
   }
 
   #parsePurchaseProducts(purchaseProductsInput) {
