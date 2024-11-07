@@ -3,23 +3,15 @@ import { copyObject } from './lib/util/object.js';
 
 class ConvenienceStore {
   #inventory;
-  #promotions;
 
   constructor() {
     this.#readInventory();
-    this.#readPromotions();
   }
 
   #readInventory() {
     const data = fs.readFileSync('./public/products.md', 'utf8');
 
     this.#inventory = this.#parseInventory(data);
-  }
-
-  #readPromotions() {
-    const data = fs.readFileSync('./public/promotions.md', 'utf8');
-
-    this.#promotions = this.#parsePromotions(data);
   }
 
   #parseInventory(data) {
@@ -67,34 +59,8 @@ class ConvenienceStore {
     };
   }
 
-  #parsePromotions(data) {
-    const [, ...lines] = data.split('\n').filter((line) => line.trim() !== '');
-
-    const promotions = {};
-    lines.forEach((line) => {
-      const [name, buy, get, startDate, endDate] = line.split(',');
-
-      promotions[name] = this.#createPromotion(buy, get, startDate, endDate);
-    });
-
-    return promotions;
-  }
-
-  #createPromotion(buy, get, startDate, endDate) {
-    return {
-      buy: Number(buy),
-      get: Number(get),
-      startDate,
-      endDate,
-    };
-  }
-
   get inventory() {
     return copyObject(this.#inventory);
-  }
-
-  get promotions() {
-    return copyObject(this.#promotions);
   }
 }
 
