@@ -129,6 +129,12 @@ class PurchaseResult {
   get freeGetProducts() {
     return this.#freeGetProducts;
   }
+
+  clearResult() {
+    this.#freeGetProducts = [];
+    this.#nonPromotionProducts = [];
+    this.#finalPurchaseProducts = [];
+  }
 }
 
 export default PurchaseResult;

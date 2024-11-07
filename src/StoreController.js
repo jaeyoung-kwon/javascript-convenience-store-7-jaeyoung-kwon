@@ -102,6 +102,7 @@ class StoreController {
 
   async #restart() {
     this.#convenienceStore.updateInventoryStock(this.#purchaseResult.finalPurchaseProducts);
+    this.#purchaseResult.clearResult();
 
     const restart = await this.#getValidatedRestart();
 
