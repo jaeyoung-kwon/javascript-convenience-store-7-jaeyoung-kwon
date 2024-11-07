@@ -89,6 +89,24 @@ class PurchaseResult {
     }
     return 0;
   }
+
+  getTotalPrice(inventory) {
+    const priceSum = this.#finalPurchaseProducts.reduce(
+      (prev, { name, quantity }) => prev + inventory[name].price * quantity,
+      0,
+    );
+
+    return priceSum;
+  }
+
+  getPromotionDiscountPrice(inventory) {
+    const priceSum = this.#freeGetProducts.reduce(
+      (prev, { name, quantity }) => prev + inventory[name].price * quantity,
+      0,
+    );
+
+    return priceSum;
+  }
 }
 
 export default PurchaseResult;
