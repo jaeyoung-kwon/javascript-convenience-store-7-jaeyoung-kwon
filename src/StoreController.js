@@ -71,46 +71,47 @@ class StoreController {
   async #scanningProductsWithPOS(products) {
     const answeredProduct = [];
 
-    for (const { name, quantity } of products) {
-      const productInventory = this.#convenienceStore.inventory[name];
-      const scanResult = this.#posMachine.scanningProduct(productInventory, quantity);
+    await products.reduce(
+      (promiseChain, { name, quantity }) =>
+        promiseChain.then(async () => {
+          const productInventory = this.#convenienceStore.inventory[name];
+          const scanResult = this.#posMachine.scanningProduct(productInventory, quantity);
 
-      if (scanResult.state === 'insufficientPromotionQuantity') {
-        const updatedProduct = await this.#getUpdatedProductWithPromotion(
-          name,
-          quantity,
-          scanResult.insufficientQuantity,
-          scanResult.freeQuantity,
-        );
-        answeredProduct.push(updatedProduct);
-      }
-      if (scanResult.state === 'promotionStockInsufficient') {
-        const updatedProduct = await this.#getUpdatedProductWithoutDiscount(
-          name,
-          quantity,
-          scanResult.insufficientQuantity,
-        );
-        answeredProduct.push(updatedProduct);
-      }
+          const updatedProduct = await this.#updateProductByState(scanResult, name, quantity);
+          answeredProduct.push(updatedProduct);
+        }),
+      Promise.resolve(),
+    );
+  }
+
+  #updateProductByState(scanResult, name, quantity) {
+    if (scanResult.state === 'insufficientPromotionQuantity') {
+      return this.#getUpdatedProductWithPromotion(
+        name,
+        quantity,
+        scanResult.insufficientQuantity,
+        scanResult.freeQuantity,
+      );
+    }
+    if (scanResult.state === 'promotionStockInsufficient') {
+      return this.#getUpdatedProductWithoutDiscount(name, quantity, scanResult.insufficientQuantity);
     }
 
-    console.log(answeredProduct);
+    return { name, quantity };
   }
 
-  #getUpdatedProductWithPromotion(name, quantity, insufficientQuantity, freeQuantity) {
-    return this.#getValidatedInsufficientPromotionAnswer(name, insufficientQuantity, freeQuantity).then((answer) => {
-      if (answer === 'Y') return { name, quantity: quantity + insufficientQuantity };
+  async #getUpdatedProductWithPromotion(name, quantity, insufficientQuantity, freeQuantity) {
+    const answer = await this.#getValidatedInsufficientPromotionAnswer(name, insufficientQuantity, freeQuantity);
+    if (answer === 'Y') return { name, quantity: quantity + insufficientQuantity };
 
-      return { name, quantity };
-    });
+    return { name, quantity };
   }
 
-  #getUpdatedProductWithoutDiscount(name, quantity, insufficientQuantity) {
-    return this.#getValidatedPromotionStockInsufficientAnswer(name, insufficientQuantity).then((answer) => {
-      if (answer === 'Y') return { name, quantity };
+  async #getUpdatedProductWithoutDiscount(name, quantity, insufficientQuantity) {
+    const answer = await this.#getValidatedPromotionStockInsufficientAnswer(name, insufficientQuantity);
+    if (answer === 'Y') return { name, quantity };
 
-      return { name, quantity: quantity - insufficientQuantity };
-    });
+    return { name, quantity: quantity - insufficientQuantity };
   }
 
   #getValidatedInsufficientPromotionAnswer(name, insufficientPromotionQuantity, freeQuantity) {
