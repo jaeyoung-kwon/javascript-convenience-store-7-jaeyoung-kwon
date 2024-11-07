@@ -36,6 +36,8 @@ class POSMachine {
 
   scanningProduct(productInventory, purchaseQuantity) {
     const promotion = this.#promotions[productInventory.promotion];
+    if (!promotion) return { state: 'nonPromotion', insufficientQuantity: purchaseQuantity, freeQuantity: 0 };
+
     const totalPromotion = promotion.buy + promotion.get;
     const maxPromotionQuantity = Math.floor(productInventory.promotionStock / totalPromotion) * totalPromotion;
 
@@ -43,13 +45,17 @@ class POSMachine {
       return {
         state: 'insufficientPromotionQuantity',
         insufficientQuantity: totalPromotion - (purchaseQuantity % totalPromotion),
-        freeQuantity: promotion.get,
+        freeQuantity: Math.floor(purchaseQuantity / totalPromotion),
       };
 
     if (this.#isPromotionStockInsufficient(productInventory, purchaseQuantity))
-      return { state: 'promotionStockInsufficient', insufficientQuantity: purchaseQuantity - maxPromotionQuantity };
+      return {
+        state: 'promotionStockInsufficient',
+        insufficientQuantity: purchaseQuantity - maxPromotionQuantity,
+        freeQuantity: maxPromotionQuantity / totalPromotion,
+      };
 
-    return { state: 'OK' };
+    return { state: 'allPromotion', insufficientQuantity: 0, freeQuantity: purchaseQuantity / totalPromotion };
   }
 
   #hasInsufficientPromotionQuantity(totalPromotion, maxPromotionQuantity, purchaseQuantity) {

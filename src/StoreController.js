@@ -1,3 +1,4 @@
+import { Console } from '@woowacourse/mission-utils';
 import ConvenienceStore from './ConvenienceStore.js';
 import { throwWoowaError } from './lib/util/error.js';
 import POSMachine from './POSMachine.js';
@@ -7,10 +8,16 @@ import Output from './View/Output.js';
 class StoreController {
   #convenienceStore;
   #posMachine;
+  #freeGetProducts;
+  #nonPromotionProducts;
+  #finalPurchaseProducts;
 
   constructor() {
     this.#convenienceStore = new ConvenienceStore();
     this.#posMachine = new POSMachine();
+    this.#freeGetProducts = [];
+    this.#nonPromotionProducts = [];
+    this.#finalPurchaseProducts = [];
   }
 
   async init() {
@@ -18,11 +25,13 @@ class StoreController {
 
     const purchaseProducts = await this.#getValidatedPurchaseProducts();
 
-    const scannedProducts = await this.#scanningProductsWithPOS(purchaseProducts);
+    await this.#scanningProductsWithPOS(purchaseProducts);
 
     const isMembershipDiscount = await this.#getValidatedMembershipDiscount();
 
-    console.log(scannedProducts, isMembershipDiscount);
+    Console.print(this.#nonPromotionProducts);
+    Console.print(this.#freeGetProducts);
+    Console.print(this.#finalPurchaseProducts);
   }
 
   #printInit() {
@@ -73,56 +82,65 @@ class StoreController {
   }
 
   async #scanningProductsWithPOS(products) {
-    const answeredProduct = [];
     await products.reduce(
       (promiseChain, { name, quantity }) =>
         promiseChain.then(async () => {
           const productInventory = this.#convenienceStore.inventory[name];
           const scanResult = this.#posMachine.scanningProduct(productInventory, quantity);
 
-          const updatedProduct = await this.#updateProductByState(scanResult, name, quantity);
-          answeredProduct.push(updatedProduct);
+          await this.#updateProductByState(scanResult, name, quantity);
         }),
       Promise.resolve(),
     );
-    return answeredProduct;
   }
 
-  #updateProductByState(scanResult, name, quantity) {
-    if (scanResult.state === 'insufficientPromotionQuantity') {
-      return this.#getUpdatedProductWithPromotion(
-        name,
-        quantity,
-        scanResult.insufficientQuantity,
-        scanResult.freeQuantity,
-      );
+  async #updateProductByState(scanResult, name, quantity) {
+    if (scanResult.state === 'insufficientPromotionQuantity')
+      await this.#getUpdatedProductWithPromotion(scanResult, name, quantity);
+    if (scanResult.state === 'promotionStockInsufficient')
+      await this.#getUpdatedProductWithoutDiscount(scanResult, name, quantity);
+
+    if (scanResult.state === 'allPromotion') {
+      this.#freeGetProducts({ name, quantity: scanResult.freeQuantity });
+      this.#finalPurchaseProducts({ name, quantity });
     }
-    if (scanResult.state === 'promotionStockInsufficient') {
-      return this.#getUpdatedProductWithoutDiscount(name, quantity, scanResult.insufficientQuantity);
+    if (scanResult.state === 'nonPromotion') {
+      this.#nonPromotionProducts({ name, quantity: scanResult.insufficientQuantity });
+      this.#finalPurchaseProducts({ name, quantity });
     }
-
-    return { name, quantity };
   }
 
-  async #getUpdatedProductWithPromotion(name, quantity, insufficientQuantity, freeQuantity) {
-    const answer = await this.#getValidatedInsufficientPromotionAnswer(name, insufficientQuantity, freeQuantity);
-    if (answer === 'Y') return { name, quantity: quantity + insufficientQuantity };
+  async #getUpdatedProductWithPromotion(scanResult, name, quantity) {
+    const answer = await this.#getValidatedInsufficientPromotionAnswer(scanResult, name);
 
-    return { name, quantity };
+    if (answer === 'Y') {
+      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity + 1 });
+      this.#finalPurchaseProducts.push({ name, quantity: quantity + scanResult.insufficientQuantity });
+    } else {
+      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity });
+      this.#nonPromotionProducts.push({ name, quantity: scanResult.insufficientQuantity });
+      this.#finalPurchaseProducts.push({ name, quantity });
+    }
   }
 
-  async #getUpdatedProductWithoutDiscount(name, quantity, insufficientQuantity) {
-    const answer = await this.#getValidatedPromotionStockInsufficientAnswer(name, insufficientQuantity);
-    if (answer === 'Y') return { name, quantity };
+  async #getUpdatedProductWithoutDiscount(scanResult, name, quantity) {
+    const answer = await this.#getValidatedPromotionStockInsufficientAnswer(name, scanResult.insufficientQuantity);
 
-    return { name, quantity: quantity - insufficientQuantity };
+    if (answer === 'Y') {
+      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity });
+      this.#nonPromotionProducts.push({ name, quantity: scanResult.insufficientQuantity });
+      this.#finalPurchaseProducts.push({ name, quantity });
+    } else {
+      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity });
+      this.#finalPurchaseProducts.push({ name, quantity: quantity - scanResult.insufficientQuantity });
+    }
   }
 
-  #getValidatedInsufficientPromotionAnswer(name, insufficientPromotionQuantity, freeQuantity) {
+  #getValidatedInsufficientPromotionAnswer(scanResult, name) {
     return Input.getInsufficientPromotionAnswer(
       name,
-      insufficientPromotionQuantity,
-      freeQuantity,
+      scanResult.insufficientPromotionQuantity,
+      scanResult.freeQuantity,
     )((input) => {
       this.#validateYNInputForm(input);
 
@@ -136,6 +154,7 @@ class StoreController {
       insufficientQuantity,
     )((input) => {
       this.#validateYNInputForm(input);
+
       return input;
     });
   }
