@@ -1,23 +1,20 @@
-import { Console } from '@woowacourse/mission-utils';
 import ConvenienceStore from './ConvenienceStore.js';
 import { throwWoowaError } from './lib/util/error.js';
+import { validateYNInputForm } from './lib/util/input.js';
 import POSMachine from './POSMachine.js';
+import PurchaseResult from './PurchaseResult.js';
 import Input from './View/Input.js';
 import Output from './View/Output.js';
 
 class StoreController {
   #convenienceStore;
   #posMachine;
-  #freeGetProducts;
-  #nonPromotionProducts;
-  #finalPurchaseProducts;
+  #purchaseResult;
 
   constructor() {
     this.#convenienceStore = new ConvenienceStore();
     this.#posMachine = new POSMachine();
-    this.#freeGetProducts = [];
-    this.#nonPromotionProducts = [];
-    this.#finalPurchaseProducts = [];
+    this.#purchaseResult = new PurchaseResult();
   }
 
   async init() {
@@ -28,10 +25,6 @@ class StoreController {
     await this.#scanningProductsWithPOS(purchaseProducts);
 
     const isMembershipDiscount = await this.#getValidatedMembershipDiscount();
-
-    Console.print(this.#nonPromotionProducts);
-    Console.print(this.#freeGetProducts);
-    Console.print(this.#finalPurchaseProducts);
   }
 
   #printInit() {
@@ -88,88 +81,19 @@ class StoreController {
           const productInventory = this.#convenienceStore.inventory[name];
           const scanResult = this.#posMachine.scanningProduct(productInventory, quantity);
 
-          await this.#updateProductByState(scanResult, name, quantity);
+          await this.#purchaseResult.updateProductResult(scanResult, name, quantity);
         }),
       Promise.resolve(),
     );
   }
 
-  async #updateProductByState(scanResult, name, quantity) {
-    if (scanResult.state === 'insufficientPromotionQuantity')
-      await this.#getUpdatedProductWithPromotion(scanResult, name, quantity);
-    if (scanResult.state === 'promotionStockInsufficient')
-      await this.#getUpdatedProductWithoutDiscount(scanResult, name, quantity);
-
-    if (scanResult.state === 'allPromotion') {
-      this.#freeGetProducts({ name, quantity: scanResult.freeQuantity });
-      this.#finalPurchaseProducts({ name, quantity });
-    }
-    if (scanResult.state === 'nonPromotion') {
-      this.#nonPromotionProducts({ name, quantity: scanResult.insufficientQuantity });
-      this.#finalPurchaseProducts({ name, quantity });
-    }
-  }
-
-  async #getUpdatedProductWithPromotion(scanResult, name, quantity) {
-    const answer = await this.#getValidatedInsufficientPromotionAnswer(scanResult, name);
-
-    if (answer === 'Y') {
-      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity + 1 });
-      this.#finalPurchaseProducts.push({ name, quantity: quantity + scanResult.insufficientQuantity });
-    } else {
-      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity });
-      this.#nonPromotionProducts.push({ name, quantity: scanResult.insufficientQuantity });
-      this.#finalPurchaseProducts.push({ name, quantity });
-    }
-  }
-
-  async #getUpdatedProductWithoutDiscount(scanResult, name, quantity) {
-    const answer = await this.#getValidatedPromotionStockInsufficientAnswer(name, scanResult.insufficientQuantity);
-
-    if (answer === 'Y') {
-      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity });
-      this.#nonPromotionProducts.push({ name, quantity: scanResult.insufficientQuantity });
-      this.#finalPurchaseProducts.push({ name, quantity });
-    } else {
-      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity });
-      this.#finalPurchaseProducts.push({ name, quantity: quantity - scanResult.insufficientQuantity });
-    }
-  }
-
-  #getValidatedInsufficientPromotionAnswer(scanResult, name) {
-    return Input.getInsufficientPromotionAnswer(
-      name,
-      scanResult.insufficientPromotionQuantity,
-      scanResult.freeQuantity,
-    )((input) => {
-      this.#validateYNInputForm(input);
-
-      return input;
-    });
-  }
-
-  #getValidatedPromotionStockInsufficientAnswer(name, insufficientQuantity) {
-    return Input.getPromotionStockInsufficientAnswer(
-      name,
-      insufficientQuantity,
-    )((input) => {
-      this.#validateYNInputForm(input);
-
-      return input;
-    });
-  }
-
   #getValidatedMembershipDiscount() {
     return Input.getMembershipDiscountAnswer()((input) => {
-      this.#validateYNInputForm(input);
+      validateYNInputForm(input);
 
       if (input === 'Y') return true;
       return false;
     });
-  }
-
-  #validateYNInputForm(input) {
-    if (input !== 'Y' && input !== 'N') throwWoowaError('잘못된 입력입니다. 다시 입력해 주세요.');
   }
 }
 
