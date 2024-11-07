@@ -25,6 +25,8 @@ class StoreController {
     await this.#scanningProductsWithPOS(purchaseProducts);
 
     const isMembershipDiscount = await this.#getValidatedMembershipDiscount();
+
+    this.#purchaseResult.getMembershipDiscountPrice(this.#convenienceStore.inventory, isMembershipDiscount);
   }
 
   #printInit() {

@@ -19,12 +19,12 @@ class PurchaseResult {
       await this.#getUpdatedProductWithoutDiscount(scanResult, name, quantity);
 
     if (scanResult.state === 'allPromotion') {
-      this.#freeGetProducts({ name, quantity: scanResult.freeQuantity });
-      this.#finalPurchaseProducts({ name, quantity });
+      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity });
+      this.#finalPurchaseProducts.push({ name, quantity });
     }
     if (scanResult.state === 'nonPromotion') {
-      this.#nonPromotionProducts({ name, quantity: scanResult.insufficientQuantity });
-      this.#finalPurchaseProducts({ name, quantity });
+      this.#nonPromotionProducts.push({ name, quantity: scanResult.insufficientQuantity });
+      this.#finalPurchaseProducts.push({ name, quantity });
     }
   }
 
@@ -74,6 +74,16 @@ class PurchaseResult {
 
       return input;
     });
+  }
+
+  getMembershipDiscountPrice(inventory, isMembershipDiscount) {
+    const priceSum = this.#nonPromotionProducts.reduce(
+      (prev, { name, quantity }) => prev + inventory[name].price * quantity,
+      0,
+    );
+    console.log(priceSum * 0.7);
+
+    if (isMembershipDiscount) return Math.floor(priceSum * 0.7);
   }
 }
 
