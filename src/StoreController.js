@@ -64,8 +64,8 @@ class StoreController {
     if (!productString.endsWith(']')) throwWoowaError('올바르지 않은 형식으로 입력했습니다. 다시 입력해 주세요.');
   }
 
-  #scanningProductsWithPOS(products) {
-    products.forEach(async ({ name, quantity }) => {
+  async #scanningProductsWithPOS(products) {
+    const productPromises = products.map(async ({ name, quantity }) => {
       const productInventory = this.convenienceStore.inventory[name];
       const scanResult = POSMachine.scanningProduct(
         this.convenienceStore.promotions[productInventory.promotion],
@@ -73,16 +73,44 @@ class StoreController {
         quantity,
       );
 
-      if (scanResult.state === 'insufficientPromotionQuantity') {
-        const input = await Input.getInsufficientPromotionAnswer(
+      if (scanResult.state === 'insufficientPromotionQuantity')
+        return this.#getUpdatedProductWithPromotion(
           name,
+          quantity,
           scanResult.insufficientPromotionQuantity,
           scanResult.freeQuantity,
-        )((input) => input);
-
-        console.log(input);
-      }
+        );
     });
+
+    const answeredProduct = await Promise.all(productPromises);
+    console.log(answeredProduct);
+  }
+
+  async #getUpdatedProductWithPromotion(name, quantity, insufficientPromotionQuantity, freeQuantity) {
+    const answer = await this.#getValidatedInsufficientPromotionAnswer(
+      name,
+      insufficientPromotionQuantity,
+      freeQuantity,
+    );
+
+    if (answer === 'Y') return { name, quantity: quantity + insufficientPromotionQuantity };
+
+    return { name, quantity };
+  }
+
+  #getValidatedInsufficientPromotionAnswer(name, insufficientPromotionQuantity, freeQuantity) {
+    return Input.getInsufficientPromotionAnswer(
+      name,
+      insufficientPromotionQuantity,
+      freeQuantity,
+    )((input) => {
+      this.#validateYNInputForm(input);
+      return input;
+    });
+  }
+
+  #validateYNInputForm(input) {
+    if (input !== 'Y' && input !== 'N') throwWoowaError('잘못된 입력입니다. 다시 입력해 주세요.');
   }
 }
 
