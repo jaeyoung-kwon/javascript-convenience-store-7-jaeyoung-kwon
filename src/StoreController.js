@@ -103,6 +103,10 @@ class StoreController {
 
   async #getUpdatedProductWithoutDiscount(name, quantity, insufficientQuantity) {
     const answer = await this.#getValidatedPromotionStockInsufficientAnswer(name, insufficientQuantity);
+
+    if (answer === 'Y') return { name, quantity };
+
+    return { name, quantity: quantity - insufficientQuantity };
   }
 
   #getValidatedInsufficientPromotionAnswer(name, insufficientPromotionQuantity, freeQuantity) {
