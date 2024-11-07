@@ -28,9 +28,7 @@ class StoreController {
 
     Output.printReceipt(this.#convenienceStore.inventory, this.#purchaseResult, isMembershipDiscount);
 
-    const restart = await this.#getValidatedRestart();
-
-    if (restart) this.init();
+    this.#restart();
   }
 
   #printInit() {
@@ -100,6 +98,14 @@ class StoreController {
       if (input === 'Y') return true;
       return false;
     });
+  }
+
+  async #restart() {
+    this.#convenienceStore.updateInventoryStock(this.#purchaseResult.finalPurchaseProducts);
+
+    const restart = await this.#getValidatedRestart();
+
+    if (restart) this.init();
   }
 
   #getValidatedRestart() {

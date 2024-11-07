@@ -62,6 +62,21 @@ class ConvenienceStore {
   get inventory() {
     return copyObject(this.#inventory);
   }
+
+  updateInventoryStock(purchaseProducts) {
+    purchaseProducts.forEach(({ name, quantity }) => {
+      let remainingQuantity = quantity;
+      if (this.#inventory[name].promotionStock > 0) {
+        const usedPromotionStock = Math.min(this.#inventory[name].promotionStock, remainingQuantity);
+        this.#inventory[name].promotionStock -= usedPromotionStock;
+        remainingQuantity -= usedPromotionStock;
+      }
+
+      if (remainingQuantity > 0 && this.#inventory[name].regularStock >= remainingQuantity) {
+        this.#inventory[name].regularStock -= remainingQuantity;
+      }
+    });
+  }
 }
 
 export default ConvenienceStore;
