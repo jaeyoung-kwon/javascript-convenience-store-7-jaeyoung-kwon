@@ -1,4 +1,6 @@
+import { Console } from '@woowacourse/mission-utils';
 import ConvenienceStore from './ConvenienceStore.js';
+import Input from './View/Input.js';
 import Output from './View/Output.js';
 
 class StoreController {
@@ -8,6 +10,10 @@ class StoreController {
 
   async init() {
     this.#printInit();
+
+    const input = await Input.getPurchaseProducts();
+
+    Console.print(input);
   }
 
   #printInit() {
