@@ -18,7 +18,11 @@ class StoreController {
 
     const purchaseProducts = await this.#getValidatedPurchaseProducts();
 
-    this.#scanningProductsWithPOS(purchaseProducts);
+    const scannedProducts = await this.#scanningProductsWithPOS(purchaseProducts);
+
+    const isMembershipDiscount = await this.#getValidatedMembershipDiscount();
+
+    console.log(scannedProducts, isMembershipDiscount);
   }
 
   #printInit() {
@@ -70,7 +74,6 @@ class StoreController {
 
   async #scanningProductsWithPOS(products) {
     const answeredProduct = [];
-
     await products.reduce(
       (promiseChain, { name, quantity }) =>
         promiseChain.then(async () => {
@@ -82,6 +85,7 @@ class StoreController {
         }),
       Promise.resolve(),
     );
+    return answeredProduct;
   }
 
   #updateProductByState(scanResult, name, quantity) {
@@ -121,6 +125,7 @@ class StoreController {
       freeQuantity,
     )((input) => {
       this.#validateYNInputForm(input);
+
       return input;
     });
   }
@@ -132,6 +137,15 @@ class StoreController {
     )((input) => {
       this.#validateYNInputForm(input);
       return input;
+    });
+  }
+
+  #getValidatedMembershipDiscount() {
+    return Input.getMembershipDiscountAnswer()((input) => {
+      this.#validateYNInputForm(input);
+
+      if (input === 'Y') return true;
+      return false;
     });
   }
 
