@@ -36,6 +36,8 @@ class StoreController {
       this.#purchaseResult.getPromotionDiscountPrice(this.#convenienceStore.inventory) -
       discountPrice;
 
+    Output.printReceipt(this.#convenienceStore.inventory, this.#purchaseResult, isMembershipDiscount);
+
     Console.print(finalPurchasePrice);
   }
 

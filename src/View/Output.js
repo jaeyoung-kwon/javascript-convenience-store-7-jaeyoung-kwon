@@ -19,6 +19,18 @@ class Output {
     });
   }
 
+  static printReceipt(inventory, result, isMembershipDiscount) {
+    Console.print('===========W 편의점=============\n');
+    Console.print('상품명		수량	금액\n');
+    this.#printPurchaseProducts(inventory, result.finalPurchaseProducts);
+  }
+
+  static #printPurchaseProducts(inventory, purchaseProducts) {
+    purchaseProducts.forEach(({ name, quantity }) => {
+      Console.print(`${name}\t\t${quantity}\t${inventory[name].price * quantity}\t`);
+    });
+  }
+
   static #getStockMessage(stock) {
     return stock > 0 ? stock : '재고 없음';
   }

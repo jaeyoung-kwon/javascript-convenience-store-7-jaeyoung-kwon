@@ -99,6 +99,12 @@ class PurchaseResult {
     return priceSum;
   }
 
+  getTotalQuantity() {
+    const quantitySum = this.#finalPurchaseProducts.reduce((prev, { name, quantity }) => prev + quantity, 0);
+
+    return quantitySum;
+  }
+
   getPromotionDiscountPrice(inventory) {
     const priceSum = this.#freeGetProducts.reduce(
       (prev, { name, quantity }) => prev + inventory[name].price * quantity,
@@ -106,6 +112,22 @@ class PurchaseResult {
     );
 
     return priceSum;
+  }
+
+  getFinalPurchasePrice(inventory, isMembershipDiscount) {
+    return (
+      this.getTotalPrice(inventory) -
+      this.getPromotionDiscountPrice(inventory) -
+      this.getMembershipDiscountPrice(inventory, isMembershipDiscount)
+    );
+  }
+
+  get finalPurchaseProducts() {
+    return this.#finalPurchaseProducts;
+  }
+
+  get freeGetProducts() {
+    return this.#freeGetProducts;
   }
 }
 
