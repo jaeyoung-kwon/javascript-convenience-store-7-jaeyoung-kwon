@@ -1,5 +1,5 @@
-import { Console } from '@woowacourse/mission-utils';
 import * as fs from 'fs';
+import { copyObject } from './lib/util.js';
 
 class ConvenienceStore {
   #inventory;
@@ -29,25 +29,25 @@ class ConvenienceStore {
     lines.forEach((line) => {
       const [name, price, quantity, promotion] = line.split(',');
       if (products[name]) {
-        this.#updateProductStock(products, name, quantity, promotion);
+        products[name] = this.#updateProductStock(products[name], quantity, promotion);
       } else {
         products[name] = this.#createProduct(price, quantity, promotion);
       }
     });
-    Console.print(products);
+
     return products;
   }
 
-  #updateProductStock(products, name, quantity, promotion) {
+  #updateProductStock(product, quantity, promotion) {
     if (promotion.trim() === 'null') {
       return {
-        ...products[name],
-        regularStock: products[name].regularStock + Number(quantity),
+        ...product,
+        regularStock: product.regularStock + Number(quantity),
       };
     }
     return {
-      ...products[name],
-      promotionStock: products[name].promotionStock + Number(quantity),
+      ...product,
+      promotionStock: product.promotionStock + Number(quantity),
     };
   }
 
@@ -76,7 +76,7 @@ class ConvenienceStore {
 
       promotions[name] = this.#createPromotion(buy, get, startDate, endDate);
     });
-    Console.print(promotions);
+
     return promotions;
   }
 
@@ -87,6 +87,14 @@ class ConvenienceStore {
       startDate,
       endDate,
     };
+  }
+
+  get inventory() {
+    return copyObject(this.#inventory);
+  }
+
+  get promotions() {
+    return copyObject(this.#promotions);
   }
 }
 

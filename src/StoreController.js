@@ -1,15 +1,18 @@
-import { Console } from '@woowacourse/mission-utils';
 import ConvenienceStore from './ConvenienceStore.js';
+import Output from './View/Output.js';
 
 class StoreController {
   constructor() {
     this.convenienceStore = new ConvenienceStore();
   }
 
-  init() {
-    Console.print(
-      '안녕하세요. W편의점입니다.\n현재 보유하고 있는 상품입니다.\n',
-    );
+  async init() {
+    this.#printInit();
+  }
+
+  #printInit() {
+    Output.printWelcomeMessage();
+    Output.printInventory(this.convenienceStore.inventory);
   }
 }
 
