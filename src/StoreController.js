@@ -1,4 +1,3 @@
-import { Console } from '@woowacourse/mission-utils';
 import ConvenienceStore from './ConvenienceStore.js';
 import { throwWoowaError } from './lib/util/error.js';
 import { validateYNInputForm } from './lib/util/input.js';
@@ -27,18 +26,11 @@ class StoreController {
 
     const isMembershipDiscount = await this.#getValidatedMembershipDiscount();
 
-    const discountPrice = this.#purchaseResult.getMembershipDiscountPrice(
-      this.#convenienceStore.inventory,
-      isMembershipDiscount,
-    );
-    const finalPurchasePrice =
-      this.#purchaseResult.getTotalPrice(this.#convenienceStore.inventory) -
-      this.#purchaseResult.getPromotionDiscountPrice(this.#convenienceStore.inventory) -
-      discountPrice;
-
     Output.printReceipt(this.#convenienceStore.inventory, this.#purchaseResult, isMembershipDiscount);
 
-    Console.print(finalPurchasePrice);
+    const restart = await this.#getValidatedRestart();
+
+    if (restart) this.init();
   }
 
   #printInit() {
@@ -103,6 +95,15 @@ class StoreController {
 
   #getValidatedMembershipDiscount() {
     return Input.getMembershipDiscountAnswer()((input) => {
+      validateYNInputForm(input);
+
+      if (input === 'Y') return true;
+      return false;
+    });
+  }
+
+  #getValidatedRestart() {
+    return Input.getRestartAnswer()((input) => {
       validateYNInputForm(input);
 
       if (input === 'Y') return true;

@@ -83,9 +83,9 @@ class PurchaseResult {
     );
 
     if (isMembershipDiscount) {
-      const discountPriceSum = Math.floor(priceSum * 0.3);
-      if (discountPriceSum >= 8000) return 8000;
-      return discountPriceSum;
+      const discountPrice = Math.floor(priceSum * 0.3);
+      if (discountPrice >= 8000) return 8000;
+      return discountPrice;
     }
     return 0;
   }

@@ -26,7 +26,9 @@ class Output {
       `총구매액\t\t${result.getTotalQuantity()}\t${numberToLocaleString(result.getTotalPrice(inventory))}\t`,
     );
     Console.print(`행사할인\t\t\t-${numberToLocaleString(result.getPromotionDiscountPrice(inventory))}\t`);
-    Console.print(`멤버십할인\t\t\t-${numberToLocaleString(result.getMembershipDiscountPrice(inventory))}\t`);
+    Console.print(
+      `멤버십할인\t\t\t-${numberToLocaleString(result.getMembershipDiscountPrice(inventory, isMembershipDiscount))}\t`,
+    );
     Console.print(
       `내실돈\t\t\t${numberToLocaleString(result.getFinalPurchasePrice(inventory, isMembershipDiscount))}\t`,
     );
