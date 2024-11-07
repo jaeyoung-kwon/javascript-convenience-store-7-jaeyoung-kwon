@@ -1,5 +1,5 @@
 import { Console } from '@woowacourse/mission-utils';
-import { numberToLocaleString } from '../lib/util.js';
+import { numberToLocaleString } from '../lib/util/number.js';
 
 class Output {
   static printWelcomeMessage() {

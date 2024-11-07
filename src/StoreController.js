@@ -1,8 +1,8 @@
 import { Console } from '@woowacourse/mission-utils';
 import ConvenienceStore from './ConvenienceStore.js';
-import { throwWoowaError } from './lib/util.js';
 import Input from './View/Input.js';
 import Output from './View/Output.js';
+import { throwWoowaError } from './lib/util/error.js';
 
 class StoreController {
   constructor() {
