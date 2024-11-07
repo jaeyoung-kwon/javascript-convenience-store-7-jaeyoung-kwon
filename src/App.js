@@ -4,7 +4,7 @@ class App {
   async run() {
     const controller = new StoreController();
 
-    controller.init();
+    await controller.init();
   }
 }
 

@@ -106,7 +106,7 @@ class StoreController {
 
     const restart = await this.#getValidatedRestart();
 
-    if (restart) this.init();
+    if (restart) await this.init();
   }
 
   #getValidatedRestart() {
