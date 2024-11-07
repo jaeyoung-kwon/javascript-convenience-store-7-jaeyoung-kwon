@@ -1,8 +1,8 @@
-import { Console } from '@woowacourse/mission-utils';
 import ConvenienceStore from './ConvenienceStore.js';
+import { throwWoowaError } from './lib/util/error.js';
+import POSMachine from './POSMachine.js';
 import Input from './View/Input.js';
 import Output from './View/Output.js';
-import { throwWoowaError } from './lib/util/error.js';
 
 class StoreController {
   constructor() {
@@ -14,7 +14,7 @@ class StoreController {
 
     const purchaseProducts = await this.#getValidatedPurchaseProducts();
 
-    Console.print(purchaseProducts);
+    this.#scanningProductsWithPOS(purchaseProducts);
   }
 
   #printInit() {
@@ -62,6 +62,17 @@ class StoreController {
   #validateProductInputForm(productString) {
     if (!productString.startsWith('[')) throwWoowaError('올바르지 않은 형식으로 입력했습니다. 다시 입력해 주세요.');
     if (!productString.endsWith(']')) throwWoowaError('올바르지 않은 형식으로 입력했습니다. 다시 입력해 주세요.');
+  }
+
+  #scanningProductsWithPOS(products) {
+    products.forEach(({ name, quantity }) => {
+      const productInventory = this.convenienceStore.inventory[name];
+      POSMachine.scanningProduct(
+        this.convenienceStore.promotions[productInventory.promotion],
+        productInventory,
+        quantity,
+      );
+    });
   }
 }
 
