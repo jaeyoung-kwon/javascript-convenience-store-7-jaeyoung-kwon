@@ -81,9 +81,13 @@ class PurchaseResult {
       (prev, { name, quantity }) => prev + inventory[name].price * quantity,
       0,
     );
-    console.log(priceSum * 0.7);
 
-    if (isMembershipDiscount) return Math.floor(priceSum * 0.7);
+    if (isMembershipDiscount) {
+      const discountPriceSum = priceSum * 0.3;
+      if (discountPriceSum >= 8000) return priceSum - 8000;
+
+      return Math.floor(priceSum - discountPriceSum);
+    }
   }
 }
 
