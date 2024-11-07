@@ -23,11 +23,20 @@ class Output {
     Console.print('===========W 편의점=============\n');
     Console.print('상품명		수량	금액\n');
     this.#printPurchaseProducts(inventory, result.finalPurchaseProducts);
+    if (result.freeGetProducts) this.#printFreeProducts(inventory, result.freeGetProducts);
+    Console.print('==============================');
   }
 
   static #printPurchaseProducts(inventory, purchaseProducts) {
     purchaseProducts.forEach(({ name, quantity }) => {
       Console.print(`${name}\t\t${quantity}\t${inventory[name].price * quantity}\t`);
+    });
+  }
+
+  static #printFreeProducts(inventory, freeProducts) {
+    Console.print('===========증	정=============');
+    freeProducts.forEach(({ name, quantity }) => {
+      Console.print(`${name}\t\t${quantity}\t`);
     });
   }
 
