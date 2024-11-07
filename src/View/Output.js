@@ -20,21 +20,25 @@ class Output {
     Console.print('===========W 편의점=============\n');
     Console.print('상품명		수량	금액\n');
     this.#printPurchaseProducts(inventory, result.finalPurchaseProducts);
-    if (result.freeGetProducts) this.#printFreeProducts(inventory, result.freeGetProducts);
+    if (result.freeGetProducts.length) this.#printFreeProducts(result.freeGetProducts);
     Console.print('==============================');
-    Console.print(`총구매액\t\t${result.getTotalQuantity()}\t${result.getTotalPrice(inventory)}\t`);
-    Console.print(`행사할인\t\t\t-${result.getPromotionDiscountPrice(inventory)}\t`);
-    Console.print(`멤버십할인\t\t\t-${result.getMembershipDiscountPrice(inventory)}\t`);
-    Console.print(`내실돈\t\t\t${result.getFinalPurchasePrice(inventory, isMembershipDiscount)}\t`);
+    Console.print(
+      `총구매액\t\t${result.getTotalQuantity()}\t${numberToLocaleString(result.getTotalPrice(inventory))}\t`,
+    );
+    Console.print(`행사할인\t\t\t-${numberToLocaleString(result.getPromotionDiscountPrice(inventory))}\t`);
+    Console.print(`멤버십할인\t\t\t-${numberToLocaleString(result.getMembershipDiscountPrice(inventory))}\t`);
+    Console.print(
+      `내실돈\t\t\t${numberToLocaleString(result.getFinalPurchasePrice(inventory, isMembershipDiscount))}\t`,
+    );
   }
 
   static #printPurchaseProducts(inventory, purchaseProducts) {
     purchaseProducts.forEach(({ name, quantity }) => {
-      Console.print(`${name}\t\t${quantity}\t${inventory[name].price * quantity}\t`);
+      Console.print(`${name}\t\t${quantity}\t${numberToLocaleString(inventory[name].price * quantity)}\t`);
     });
   }
 
-  static #printFreeProducts(inventory, freeProducts) {
+  static #printFreeProducts(freeProducts) {
     Console.print('===========증	정=============');
     freeProducts.forEach(({ name, quantity }) => {
       Console.print(`${name}\t\t${quantity}\t`);
