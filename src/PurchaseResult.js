@@ -83,13 +83,11 @@ class PurchaseResult {
     );
 
     if (isMembershipDiscount) {
-      const discountPriceSum = priceSum * 0.3;
-      if (discountPriceSum >= 8000) return priceSum - 8000;
-
-      return Math.floor(priceSum - discountPriceSum);
+      const discountPriceSum = Math.floor(priceSum * 0.3);
+      if (discountPriceSum >= 8000) return 8000;
+      return discountPriceSum;
     }
-
-    return priceSum;
+    return 0;
   }
 }
 
