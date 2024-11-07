@@ -3,15 +3,23 @@ import * as fs from 'fs';
 
 class ConvenienceStore {
   #inventory;
+  #promotions;
 
   constructor() {
     this.#readInventory();
+    this.#readPromotions();
   }
 
   #readInventory() {
     const data = fs.readFileSync('./public/products.md', 'utf8');
 
     this.#inventory = this.#parseInventory(data);
+  }
+
+  #readPromotions() {
+    const data = fs.readFileSync('./public/promotions.md', 'utf8');
+
+    this.#promotions = this.#parsePromotions(data);
   }
 
   #parseInventory(data) {
@@ -56,6 +64,28 @@ class ConvenienceStore {
       promotion: promotion.trim(),
       regularStock: 0,
       promotionStock: Number(quantity),
+    };
+  }
+
+  #parsePromotions(data) {
+    const [, ...lines] = data.split('\n').filter((line) => line.trim() !== '');
+
+    const promotions = {};
+    lines.forEach((line) => {
+      const [name, buy, get, startDate, endDate] = line.split(',');
+
+      promotions[name] = this.#createPromotion(buy, get, startDate, endDate);
+    });
+    Console.print(promotions);
+    return promotions;
+  }
+
+  #createPromotion(buy, get, startDate, endDate) {
+    return {
+      buy: Number(buy),
+      get: Number(get),
+      startDate,
+      endDate,
     };
   }
 }
