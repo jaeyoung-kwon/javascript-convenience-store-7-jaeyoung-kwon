@@ -8,14 +8,11 @@ class Output {
 
   static printInventory(inventory) {
     Object.entries(inventory).forEach(([name, stock]) => {
-      if (stock.promotionStock)
+      if (stock.promotion)
         Console.print(
-          `- ${name} ${numberToLocaleString(stock.price)}원 ${this.#getStockMessage(stock.promotionStock)}개 ${stock.promotion}`,
+          `- ${name} ${numberToLocaleString(stock.price)}원 ${this.#getStockMessage(stock.promotionStock)} ${stock.promotion}`,
         );
-      if (stock.regularStock)
-        Console.print(
-          `- ${name} ${numberToLocaleString(stock.price)}원 ${this.#getStockMessage(stock.regularStock)}개`,
-        );
+      Console.print(`- ${name} ${numberToLocaleString(stock.price)}원 ${this.#getStockMessage(stock.regularStock)}`);
     });
   }
 
@@ -45,7 +42,7 @@ class Output {
   }
 
   static #getStockMessage(stock) {
-    return stock > 0 ? stock : '재고 없음';
+    return stock > 0 ? `${stock}개` : '재고 없음';
   }
 }
 
