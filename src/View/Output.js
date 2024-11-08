@@ -30,14 +30,14 @@ class Output {
 
   static #printPurchaseProducts(purchaseProducts) {
     purchaseProducts.forEach(({ name, quantity, price }) => {
-      Console.print(this.#formatReceiptString({ name, quantity, price: numberToLocaleString(price * quantity) }));
+      if (quantity !== 0) Console.print(this.#formatReceiptString({ name, quantity, price: price * quantity }));
     });
   }
 
   static #printFreeProducts(freeProducts) {
     Console.print('===========증	정=============');
     freeProducts.forEach(({ name, quantity }) => {
-      Console.print(this.#formatReceiptString({ name, quantity }));
+      if (quantity !== 0) Console.print(this.#formatReceiptString({ name, quantity }));
     });
   }
 
