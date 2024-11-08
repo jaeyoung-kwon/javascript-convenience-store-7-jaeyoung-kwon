@@ -24,9 +24,9 @@ class PurchaseResult {
   }
 
   async #updateProductWithPromotion(insufficientQuantity, freeQuantity, { name, quantity, price }) {
-    const answer = await this.#getValidatedInsufficientPromotionAnswer(insufficientQuantity, name);
+    const isAddInsufficientProduct = await this.#getValidatedInsufficientPromotionAnswer(insufficientQuantity, name);
 
-    if (answer === 'Y') {
+    if (isAddInsufficientProduct) {
       this.#freeGetProducts.push({ name, quantity: freeQuantity + 1, price });
       this.#finalPurchaseProducts.push({ name, quantity: quantity + insufficientQuantity, price });
     } else {
@@ -37,9 +37,12 @@ class PurchaseResult {
   }
 
   async #updateProductWithoutDiscount(insufficientQuantity, freeQuantity, { name, quantity, price }) {
-    const answer = await this.#getValidatedPromotionStockInsufficientAnswer(insufficientQuantity, name);
+    const isPurchaseWithoutDiscount = await this.#getValidatedPromotionStockInsufficientAnswer(
+      insufficientQuantity,
+      name,
+    );
 
-    if (answer === 'Y') {
+    if (isPurchaseWithoutDiscount) {
       this.#freeGetProducts.push({ name, quantity: freeQuantity, price });
       this.#nonPromotionProducts.push({ name, quantity: insufficientQuantity, price });
       this.#finalPurchaseProducts.push({ name, quantity, price });
@@ -60,25 +63,11 @@ class PurchaseResult {
   }
 
   #getValidatedInsufficientPromotionAnswer(insufficientQuantity, name) {
-    return Input.getInsufficientPromotionAnswer(
-      name,
-      insufficientQuantity,
-    )((input) => {
-      validateYNInputForm(input);
-
-      return input;
-    });
+    return Input.getInsufficientPromotionAnswer(name, insufficientQuantity)(validateYNInputForm);
   }
 
   #getValidatedPromotionStockInsufficientAnswer(insufficientQuantity, name) {
-    return Input.getPromotionStockInsufficientAnswer(
-      name,
-      insufficientQuantity,
-    )((input) => {
-      validateYNInputForm(input);
-
-      return input;
-    });
+    return Input.getPromotionStockInsufficientAnswer(name, insufficientQuantity)(validateYNInputForm);
   }
 
   getSummary(isMembershipDiscount) {

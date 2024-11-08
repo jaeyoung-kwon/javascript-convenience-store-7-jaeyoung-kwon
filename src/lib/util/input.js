@@ -1,4 +1,5 @@
 import { Console } from '@woowacourse/mission-utils';
+import { validateYNInputForm } from './validation.js';
 
 export const repeatUtilComplete = (message) => async (validationCallback) => {
   try {
@@ -9,4 +10,11 @@ export const repeatUtilComplete = (message) => async (validationCallback) => {
     Console.print(`${error.message}\n`);
     return repeatUtilComplete(message)(validationCallback); // 재귀 호출
   }
+};
+
+export const validateYNAnswer = (answer) => {
+  validateYNInputForm(answer);
+
+  if (answer === 'Y') return true;
+  return false;
 };

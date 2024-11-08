@@ -1,5 +1,6 @@
 import ConvenienceStore from './ConvenienceStore.js';
-import { validateProductInputForm, validatePurchaseProducts, validateYNInputForm } from './lib/util/validation.js';
+import { validateYNAnswer } from './lib/util/input.js';
+import { validateProductInputForm, validatePurchaseProducts } from './lib/util/validation.js';
 import POSMachine from './POSMachine.js';
 import PurchaseResult from './PurchaseResult.js';
 import Input from './View/Input.js';
@@ -25,7 +26,7 @@ class StoreController {
 
     const isMembershipDiscount = await this.#getValidatedMembershipDiscount();
 
-    Output.printReceipt(this.#purchaseResult.getSummary(isMembershipDiscount));
+    this.#printReceipt(isMembershipDiscount);
 
     this.#restart();
   }
@@ -74,12 +75,11 @@ class StoreController {
   }
 
   #getValidatedMembershipDiscount() {
-    return Input.getMembershipDiscountAnswer()((input) => {
-      validateYNInputForm(input);
+    return Input.getMembershipDiscountAnswer()(validateYNAnswer);
+  }
 
-      if (input === 'Y') return true;
-      return false;
-    });
+  #printReceipt(isMembershipDiscount) {
+    Output.printReceipt(this.#purchaseResult.getSummary(isMembershipDiscount));
   }
 
   async #restart() {
@@ -92,12 +92,7 @@ class StoreController {
   }
 
   #getValidatedRestart() {
-    return Input.getRestartAnswer()((input) => {
-      validateYNInputForm(input);
-
-      if (input === 'Y') return true;
-      return false;
-    });
+    return Input.getRestartAnswer()(validateYNAnswer);
   }
 }
 
