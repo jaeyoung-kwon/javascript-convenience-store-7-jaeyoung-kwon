@@ -79,7 +79,10 @@ class StoreController {
   }
 
   #printReceipt(isMembershipDiscount) {
-    Output.printReceipt(this.#purchaseResult.getSummary(isMembershipDiscount));
+    Output.printReceipt(
+      this.#purchaseResult.getProductsForReceipt(),
+      this.#purchaseResult.getResultForReceipt(isMembershipDiscount),
+    );
   }
 
   #getValidatedRestart() {

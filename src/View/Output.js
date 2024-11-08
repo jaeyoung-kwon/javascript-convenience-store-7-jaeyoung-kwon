@@ -20,12 +20,15 @@ class Output {
     return stock > 0 ? `${stock}개` : '재고 없음';
   }
 
-  static printReceipt({ finalPurchaseProducts, freeGetProducts, totalQuantity, price }) {
+  static printReceipt(
+    { finalPurchaseProducts, freeGetProducts },
+    { totalQuantity, totalPrice, promotionDiscountPrice, membershipDiscountPrice },
+  ) {
     Console.print('===========W 편의점=============');
     Console.print(`상품명\t\t수량\t금액`);
     this.#printPurchaseProducts(finalPurchaseProducts);
     if (freeGetProducts.length) this.#printFreeProducts(freeGetProducts);
-    this.#printPurchaseResult(totalQuantity, price);
+    this.#printPurchaseResult(totalQuantity, totalPrice, promotionDiscountPrice, membershipDiscountPrice);
   }
 
   static #printPurchaseProducts(purchaseProducts) {
@@ -41,13 +44,13 @@ class Output {
     });
   }
 
-  static #printPurchaseResult(totalQuantity, price) {
-    const finalPurchasePrice = price.totalPrice - price.promotionDiscountPrice - price.membershipDiscountPrice;
+  static #printPurchaseResult(totalQuantity, totalPrice, promotionDiscountPrice, membershipDiscountPrice) {
+    const finalPurchasePrice = totalPrice - promotionDiscountPrice - membershipDiscountPrice;
 
     Console.print('==============================');
-    Console.print(this.#formatReceiptString({ name: '총구매액', quantity: totalQuantity, price: price.totalPrice }));
-    Console.print(this.#formatReceiptString({ name: '행사할인', price: -1 * price.promotionDiscountPrice }));
-    Console.print(this.#formatReceiptString({ name: '멤버십할인', price: -1 * price.membershipDiscountPrice }));
+    Console.print(this.#formatReceiptString({ name: '총구매액', quantity: totalQuantity, price: totalPrice }));
+    Console.print(this.#formatReceiptString({ name: '행사할인', price: -1 * promotionDiscountPrice }));
+    Console.print(this.#formatReceiptString({ name: '멤버십할인', price: -1 * membershipDiscountPrice }));
     Console.print(this.#formatReceiptString({ name: '내실돈', price: finalPurchasePrice }));
   }
 

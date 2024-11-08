@@ -14,7 +14,7 @@ class PurchaseResult {
 
   async updateProductResult(scanResult, product) {
     if (scanResult.state === 'insufficientPromotionQuantity')
-      await this.#updateProductWithPromotion(scanResult.insufficientQuantity, scanResult.freeQuantity, product);
+      await this.#updateProductInsufficientPromotion(scanResult.insufficientQuantity, scanResult.freeQuantity, product);
     if (scanResult.state === 'promotionStockInsufficient')
       await this.#updateProductWithoutDiscount(scanResult.insufficientQuantity, scanResult.freeQuantity, product);
 
@@ -23,43 +23,32 @@ class PurchaseResult {
       this.#updateProductAtNonPromotion(scanResult.insufficientQuantity, product);
   }
 
-  async #updateProductWithPromotion(insufficientQuantity, freeQuantity, { name, quantity, price }) {
-    const isAddInsufficientProduct = await this.#getValidatedInsufficientPromotionAnswer(insufficientQuantity, name);
-
-    if (isAddInsufficientProduct) {
-      this.#freeGetProducts.push({ name, quantity: freeQuantity + 1, price });
-      this.#finalPurchaseProducts.push({ name, quantity: quantity + insufficientQuantity, price });
+  async #updateProductInsufficientPromotion(insufficientQuantity, freeQuantity, product) {
+    const answer = await this.#getValidatedInsufficientPromotionAnswer(insufficientQuantity, product.name);
+    if (answer) {
+      this.#addProductWithInsufficientPromotion(insufficientQuantity, freeQuantity, product);
     } else {
-      this.#freeGetProducts.push({ name, quantity: freeQuantity, price });
-      this.#nonPromotionProducts.push({ name, quantity: insufficientQuantity, price });
-      this.#finalPurchaseProducts.push({ name, quantity, price });
+      this.#addProductWithoutInsufficientPromotion(insufficientQuantity, freeQuantity, product);
     }
   }
 
-  async #updateProductWithoutDiscount(insufficientQuantity, freeQuantity, { name, quantity, price }) {
-    const isPurchaseWithoutDiscount = await this.#getValidatedPromotionStockInsufficientAnswer(
-      insufficientQuantity,
-      name,
-    );
-
-    if (isPurchaseWithoutDiscount) {
-      this.#freeGetProducts.push({ name, quantity: freeQuantity, price });
-      this.#nonPromotionProducts.push({ name, quantity: insufficientQuantity, price });
-      this.#finalPurchaseProducts.push({ name, quantity, price });
+  async #updateProductWithoutDiscount(insufficientQuantity, freeQuantity, product) {
+    const answer = await this.#getValidatedPromotionStockInsufficientAnswer(insufficientQuantity, product.name);
+    if (answer) {
+      this.#addProductWithKeepProducts(insufficientQuantity, freeQuantity, product);
     } else {
-      this.#freeGetProducts.push({ name, quantity: freeQuantity, price });
-      this.#finalPurchaseProducts.push({ name, quantity: quantity - insufficientQuantity, price });
+      this.#addProductWithoutKeepProducts(insufficientQuantity, freeQuantity, product);
     }
   }
 
   #updateProductAtAllPromotion(freeQuantity, { name, quantity, price }) {
-    this.#freeGetProducts.push({ name, quantity: freeQuantity, price });
-    this.#finalPurchaseProducts.push({ name, quantity, price });
+    this.#addFreeProduct(name, freeQuantity, price);
+    this.#addFinalPurchaseProduct(name, quantity, price);
   }
 
   #updateProductAtNonPromotion(insufficientQuantity, { name, quantity, price }) {
-    this.#nonPromotionProducts.push({ name, quantity: insufficientQuantity, price });
-    this.#finalPurchaseProducts.push({ name, quantity, price });
+    this.#addNonPromotionProduct(name, insufficientQuantity, price);
+    this.#addFinalPurchaseProduct(name, quantity, price);
   }
 
   #getValidatedInsufficientPromotionAnswer(insufficientQuantity, name) {
@@ -70,16 +59,53 @@ class PurchaseResult {
     return Input.getPromotionStockInsufficientAnswer(name, insufficientQuantity)(validateYNAnswer);
   }
 
-  getSummary(isMembershipDiscount) {
+  #addProductWithInsufficientPromotion(insufficientQuantity, freeQuantity, { name, quantity, price }) {
+    this.#addFreeProduct(name, freeQuantity + 1, price);
+    this.#addFinalPurchaseProduct(name, quantity + insufficientQuantity, price);
+  }
+
+  #addProductWithoutInsufficientPromotion(insufficientQuantity, freeQuantity, { name, quantity, price }) {
+    this.#addFreeProduct(name, freeQuantity, price);
+    this.#addNonPromotionProduct(name, insufficientQuantity, price);
+    this.#addFinalPurchaseProduct(name, quantity, price);
+  }
+
+  #addProductWithKeepProducts(insufficientQuantity, freeQuantity, { name, quantity, price }) {
+    this.#addFreeProduct(name, freeQuantity, price);
+    this.#addNonPromotionProduct(name, insufficientQuantity, price);
+    this.#addFinalPurchaseProduct(name, quantity, price);
+  }
+
+  #addProductWithoutKeepProducts(insufficientQuantity, freeQuantity, { name, quantity, price }) {
+    this.#addFreeProduct(name, freeQuantity, price);
+    this.#addFinalPurchaseProduct(name, quantity - insufficientQuantity, price);
+  }
+
+  #addFreeProduct(name, quantity, price) {
+    this.#freeGetProducts.push({ name, quantity, price });
+  }
+
+  #addNonPromotionProduct(name, quantity, price) {
+    this.#nonPromotionProducts.push({ name, quantity, price });
+  }
+
+  #addFinalPurchaseProduct(name, quantity, price) {
+    this.#finalPurchaseProducts.push({ name, quantity, price });
+  }
+
+  getProductsForReceipt() {
     return {
       finalPurchaseProducts: [...this.#finalPurchaseProducts],
       freeGetProducts: [...this.#freeGetProducts],
+    };
+  }
+
+  getResultForReceipt(isMembershipDiscount) {
+    return {
       totalQuantity: this.#finalPurchaseProducts.reduce((prev, { quantity }) => prev + quantity, 0),
-      price: {
-        totalPrice: this.#sumPrice(this.#finalPurchaseProducts),
-        promotionDiscountPrice: this.#sumPrice(this.#freeGetProducts),
-        membershipDiscountPrice: this.#getMembershipDiscountPrice(isMembershipDiscount),
-      },
+      totalPrice: this.#sumPrice(this.#finalPurchaseProducts),
+      promotionDiscountPrice: this.#sumPrice(this.#freeGetProducts),
+      membershipDiscountPrice: this.#getMembershipDiscountPrice(isMembershipDiscount),
     };
   }
 
