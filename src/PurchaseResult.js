@@ -1,4 +1,4 @@
-import { validateYNInputForm } from './lib/util/validation.js';
+import { validateYNAnswer } from './lib/util/input.js';
 import Input from './View/Input.js';
 
 class PurchaseResult {
@@ -63,11 +63,11 @@ class PurchaseResult {
   }
 
   #getValidatedInsufficientPromotionAnswer(insufficientQuantity, name) {
-    return Input.getInsufficientPromotionAnswer(name, insufficientQuantity)(validateYNInputForm);
+    return Input.getInsufficientPromotionAnswer(name, insufficientQuantity)(validateYNAnswer);
   }
 
   #getValidatedPromotionStockInsufficientAnswer(insufficientQuantity, name) {
-    return Input.getPromotionStockInsufficientAnswer(name, insufficientQuantity)(validateYNInputForm);
+    return Input.getPromotionStockInsufficientAnswer(name, insufficientQuantity)(validateYNAnswer);
   }
 
   getSummary(isMembershipDiscount) {
