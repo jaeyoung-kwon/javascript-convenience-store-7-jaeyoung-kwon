@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { copyObject } from './lib/util/object.js';
 
-class ConvenienceStore {
+class InventoryStore {
   #inventory;
 
   constructor() {
@@ -21,16 +21,16 @@ class ConvenienceStore {
     lines.forEach((line) => {
       const [name, price, quantity, promotion] = line.split(',');
       if (products[name]) {
-        products[name] = this.#updateProductStock(products[name], quantity, promotion);
+        products[name] = this.#updateInventoryProduct(products[name], quantity, promotion);
       } else {
-        products[name] = this.#createProduct(price, quantity, promotion);
+        products[name] = this.#createInventoryProduct(price, quantity, promotion);
       }
     });
 
     return products;
   }
 
-  #updateProductStock(product, quantity, promotion) {
+  #updateInventoryProduct(product, quantity, promotion) {
     if (promotion.trim() === 'null') {
       return {
         ...product,
@@ -43,7 +43,7 @@ class ConvenienceStore {
     };
   }
 
-  #createProduct(price, quantity, promotion) {
+  #createInventoryProduct(price, quantity, promotion) {
     if (promotion.trim() === 'null')
       return {
         price: Number(price),
@@ -63,7 +63,7 @@ class ConvenienceStore {
     return copyObject(this.#inventory);
   }
 
-  updateInventoryStock(purchaseProducts) {
+  updateInventory(purchaseProducts) {
     purchaseProducts.forEach(({ name, quantity }) => {
       let remainingQuantity = quantity;
       if (this.#inventory[name].promotionStock > 0) {
@@ -79,4 +79,4 @@ class ConvenienceStore {
   }
 }
 
-export default ConvenienceStore;
+export default InventoryStore;

@@ -1,4 +1,4 @@
-import ConvenienceStore from './ConvenienceStore.js';
+import InventoryStore from './InventoryStore.js';
 import { validateYNAnswer } from './lib/util/input.js';
 import { validateProductInputForm, validatePurchaseProduct } from './lib/util/validation.js';
 import POSMachine from './POSMachine.js';
@@ -7,12 +7,12 @@ import Input from './View/Input.js';
 import Output from './View/Output.js';
 
 class StoreController {
-  #convenienceStore;
+  #inventoryStore;
   #posMachine;
   #purchaseResult;
 
   constructor() {
-    this.#convenienceStore = new ConvenienceStore();
+    this.#inventoryStore = new InventoryStore();
     this.#posMachine = new POSMachine();
     this.#purchaseResult = new PurchaseResult();
   }
@@ -35,7 +35,7 @@ class StoreController {
 
   #printInit() {
     Output.printWelcomeMessage();
-    Output.printInventory(this.#convenienceStore.inventory);
+    Output.printInventory(this.#inventoryStore.inventory);
   }
 
   #getValidatedPurchaseProducts() {
@@ -50,12 +50,12 @@ class StoreController {
     const purchaseProducts = purchaseProductsInput.split(',').map((product) => {
       validateProductInputForm(product);
       const [name, quantity] = product.slice(1, -1).split('-');
-      validatePurchaseProduct(name, quantity, this.#convenienceStore.inventory[name]);
+      validatePurchaseProduct(name, quantity, this.#inventoryStore.inventory[name]);
 
       return {
         name: name.trim(),
         quantity: Number(quantity),
-        price: this.#convenienceStore.inventory[name].price,
+        price: this.#inventoryStore.inventory[name].price,
       };
     });
 
@@ -66,7 +66,7 @@ class StoreController {
     await products.reduce(
       (promiseChain, product) =>
         promiseChain.then(async () => {
-          const productInventory = this.#convenienceStore.inventory[product.name];
+          const productInventory = this.#inventoryStore.inventory[product.name];
           const scanResult = this.#posMachine.scanningProduct(product.quantity, productInventory);
 
           await this.#purchaseResult.updateProductResult(scanResult, product);
@@ -88,7 +88,7 @@ class StoreController {
   }
 
   async #restart() {
-    this.#convenienceStore.updateInventoryStock(this.#purchaseResult.finalPurchaseProducts);
+    this.#inventoryStore.updateInventory(this.#purchaseResult.finalPurchaseProducts);
     this.#purchaseResult.clearResult();
 
     await this.init();
