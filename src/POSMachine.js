@@ -15,40 +15,39 @@ class POSMachine {
 
   #parsePromotions(data) {
     const [, ...lines] = data.split('\n').filter((line) => line.trim() !== '');
-    const now = DateTimes.now();
-
     const promotions = {};
     lines.forEach((line) => {
       const [name, buy, get, startDate, endDate] = line.split(',');
-
-      if (new Date(startDate).getTime() <= now.getTime() && now.getTime() <= new Date(endDate).getTime())
+      if (this.#isCurrentPromotion(startDate, endDate))
         promotions[name] = this.#createPromotion(buy, get, startDate, endDate);
     });
-
     return promotions;
   }
 
+  #isCurrentPromotion(startDate, endDate) {
+    const now = DateTimes.now();
+    return new Date(startDate).getTime() <= now.getTime() && now.getTime() <= new Date(endDate).getTime();
+  }
+
   #createPromotion(buy, get, startDate, endDate) {
-    return {
-      buy: Number(buy),
-      get: Number(get),
-      startDate,
-      endDate,
-    };
+    return { buy: Number(buy), get: Number(get), startDate, endDate };
   }
 
   scanningProduct(purchaseQuantity, productInventory) {
     const promotion = this.#promotions[productInventory.promotion];
     if (!promotion) return this.#createNonPromotionResult(purchaseQuantity);
 
+    return this.#evaluatePromotion(purchaseQuantity, productInventory.promotionStock, promotion);
+  }
+
+  #evaluatePromotion(purchaseQuantity, promotionStock, promotion) {
     const totalPromotion = promotion.buy + promotion.get;
-    const maxPromotionQuantity = Math.floor(productInventory.promotionStock / totalPromotion) * totalPromotion;
+    const maxPromotionQuantity = Math.floor(promotionStock / totalPromotion) * totalPromotion;
 
     if (this.#hasInsufficientPromotionQuantity(purchaseQuantity, totalPromotion, maxPromotionQuantity))
       return this.#createInsufficientPromotionQuantityResult(purchaseQuantity, totalPromotion);
-    if (this.#isPromotionStockInsufficient(purchaseQuantity, productInventory.promotionStock, maxPromotionQuantity))
+    if (this.#isPromotionStockInsufficient(purchaseQuantity, promotionStock, maxPromotionQuantity))
       return this.#createPromotionStockInsufficientResult(purchaseQuantity, totalPromotion, maxPromotionQuantity);
-
     return this.#createAllPromotionResult(purchaseQuantity, totalPromotion);
   }
 
