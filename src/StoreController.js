@@ -18,18 +18,13 @@ class StoreController {
 
   async init() {
     this.#printInit();
-
     const purchaseProducts = await this.#getValidatedPurchaseProducts();
 
     await this.#scanningProductsWithPOS(purchaseProducts);
-
     const isMembershipDiscount = await this.#getValidatedMembershipDiscount();
 
     this.#printReceipt(isMembershipDiscount);
-
-    const isRestart = await this.#getValidatedRestart();
-
-    if (isRestart) this.#restart();
+    this.#restartWithAnswer();
   }
 
   #printInit() {
@@ -46,32 +41,37 @@ class StoreController {
   }
 
   #parseWithValidatePurchaseProducts(purchaseProductsInput) {
-    const purchaseProducts = purchaseProductsInput.split(',').map((product) => {
+    return purchaseProductsInput.split(',').map((product) => {
       validateProductInputForm(product);
       const [name, quantity] = product.slice(1, -1).split('-');
       validatePurchaseProduct(name, quantity, this.#inventoryStore.inventory[name]);
 
-      return {
-        name: name.trim(),
-        quantity: Number(quantity),
-        price: this.#inventoryStore.inventory[name].price,
-      };
+      return this.#parseProduct(name, quantity);
     });
+  }
 
-    return purchaseProducts;
+  #parseProduct(name, quantity) {
+    return {
+      name: name.trim(),
+      quantity: Number(quantity),
+      price: this.#inventoryStore.inventory[name].price,
+    };
   }
 
   async #scanningProductsWithPOS(products) {
     await products.reduce(
       (promiseChain, product) =>
         promiseChain.then(async () => {
-          const productInventory = this.#inventoryStore.inventory[product.name];
-          const scanResult = this.#posMachine.scanningProduct(product.quantity, productInventory);
-
+          const scanResult = this.#scanningProduct(product.name, product.quantity);
           await this.#purchaseResult.updateProductResult(scanResult, product);
         }),
       Promise.resolve(),
     );
+  }
+
+  #scanningProduct(name, quantity) {
+    const productInventory = this.#inventoryStore.inventory[name];
+    return this.#posMachine.scanningProduct(quantity, productInventory);
   }
 
   #getValidatedMembershipDiscount() {
@@ -86,11 +86,15 @@ class StoreController {
     return Input.getRestartAnswer()(validateYNAnswer);
   }
 
-  async #restart() {
-    this.#inventoryStore.updateInventory(this.#purchaseResult.finalPurchaseProducts);
-    this.#purchaseResult.clearResult();
+  async #restartWithAnswer() {
+    const isRestart = await this.#getValidatedRestart();
 
-    await this.init();
+    if (isRestart) {
+      this.#inventoryStore.updateInventory(this.#purchaseResult.finalPurchaseProducts);
+      this.#purchaseResult.clearResult();
+
+      await this.init();
+    }
   }
 }
 
