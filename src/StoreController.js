@@ -1,7 +1,5 @@
 import ConvenienceStore from './ConvenienceStore.js';
-import { ERROR_MESSAGE } from './lib/constant/error.js';
-import { throwWoowaError } from './lib/util/error.js';
-import { validateYNInputForm } from './lib/util/input.js';
+import { validateProductInputForm, validatePurchaseProducts, validateYNInputForm } from './lib/util/validation.js';
 import POSMachine from './POSMachine.js';
 import PurchaseResult from './PurchaseResult.js';
 import Input from './View/Input.js';
@@ -40,7 +38,7 @@ class StoreController {
   #getValidatedPurchaseProducts() {
     return Input.getPurchaseProducts()((input) => {
       const parsedPurchaseProducts = this.#parsePurchaseProducts(input);
-      this.#validatePurchaseProducts(parsedPurchaseProducts);
+      validatePurchaseProducts(parsedPurchaseProducts, this.#convenienceStore.inventory);
 
       return parsedPurchaseProducts;
     });
@@ -50,33 +48,13 @@ class StoreController {
     const purchaseProducts = purchaseProductsInput
       .split(',')
       .map((product) => {
-        this.#validateProductInputForm(product);
+        validateProductInputForm(product);
         return product.slice(1, -1);
       })
       .map((product) => product.split('-'))
       .map(([name, quantity]) => ({ name: name.trim(), quantity: Number(quantity) }));
 
     return purchaseProducts;
-  }
-
-  #validatePurchaseProducts(purchaseProducts) {
-    const { inventory } = this.#convenienceStore;
-
-    purchaseProducts.forEach(({ name, quantity }) => {
-      const inventoryProduct = inventory[name];
-
-      if (!name || !quantity) throwWoowaError(ERROR_MESSAGE.invalidInputForm);
-
-      if (!inventoryProduct) throwWoowaError(ERROR_MESSAGE.invalidProductName);
-
-      if (inventoryProduct.regularStock + inventoryProduct.promotionStock < quantity)
-        throwWoowaError(ERROR_MESSAGE.exceedMaxQuantity);
-    });
-  }
-
-  #validateProductInputForm(productString) {
-    if (!productString.startsWith('[')) throwWoowaError(ERROR_MESSAGE.invalidInputForm);
-    if (!productString.endsWith(']')) throwWoowaError(ERROR_MESSAGE.invalidInputForm);
   }
 
   async #scanningProductsWithPOS(products) {

@@ -1,4 +1,4 @@
-import { validateYNInputForm } from './lib/util/input.js';
+import { validateYNInputForm } from './lib/util/validation.js';
 import Input from './View/Input.js';
 
 class PurchaseResult {
