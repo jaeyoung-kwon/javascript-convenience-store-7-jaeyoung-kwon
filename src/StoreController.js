@@ -66,7 +66,7 @@ class StoreController {
       (promiseChain, product) =>
         promiseChain.then(async () => {
           const productInventory = this.#convenienceStore.inventory[product.name];
-          const scanResult = this.#posMachine.scanningProduct(productInventory, product.quantity);
+          const scanResult = this.#posMachine.scanningProduct(product.quantity, productInventory);
 
           await this.#purchaseResult.updateProductResult(scanResult, product);
         }),

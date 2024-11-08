@@ -37,31 +37,31 @@ class POSMachine {
     };
   }
 
-  scanningProduct(productInventory, purchaseQuantity) {
+  scanningProduct(purchaseQuantity, productInventory) {
     const promotion = this.#promotions[productInventory.promotion];
     if (!promotion) return this.#createNonPromotionResult(purchaseQuantity);
 
     const totalPromotion = promotion.buy + promotion.get;
     const maxPromotionQuantity = Math.floor(productInventory.promotionStock / totalPromotion) * totalPromotion;
 
-    if (this.#hasInsufficientPromotionQuantity(totalPromotion, maxPromotionQuantity, purchaseQuantity))
-      return this.#createInsufficientPromotionQuantityResult(totalPromotion, purchaseQuantity);
-    if (this.#isPromotionStockInsufficient(purchaseQuantity, productInventory))
+    if (this.#hasInsufficientPromotionQuantity(purchaseQuantity, totalPromotion, maxPromotionQuantity))
+      return this.#createInsufficientPromotionQuantityResult(purchaseQuantity, totalPromotion);
+    if (this.#isPromotionStockInsufficient(purchaseQuantity, productInventory.promotionStock, maxPromotionQuantity))
       return this.#createPromotionStockInsufficientResult(purchaseQuantity, totalPromotion, maxPromotionQuantity);
 
     return this.#createAllPromotionResult(purchaseQuantity, totalPromotion);
   }
 
-  #hasInsufficientPromotionQuantity(totalPromotion, maxPromotionQuantity, purchaseQuantity) {
+  #hasInsufficientPromotionQuantity(purchaseQuantity, totalPromotion, maxPromotionQuantity) {
     if (maxPromotionQuantity < purchaseQuantity) return false;
     if (purchaseQuantity % totalPromotion === 0) return false;
 
     return true;
   }
 
-  #isPromotionStockInsufficient(productInventory, purchaseQuantity) {
-    if (productInventory.promotionStock === 0) return false;
-    if (productInventory.promotionStock > purchaseQuantity) return false;
+  #isPromotionStockInsufficient(purchaseQuantity, promotionStock, maxPromotionQuantity) {
+    if (promotionStock === 0) return false;
+    if (purchaseQuantity <= maxPromotionQuantity) return false;
 
     return true;
   }
