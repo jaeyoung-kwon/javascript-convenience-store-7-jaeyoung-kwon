@@ -12,45 +12,49 @@ class PurchaseResult {
     this.#finalPurchaseProducts = [];
   }
 
-  async updateProductResult(scanResult, name, quantity) {
+  async updateProductResult(scanResult, product) {
     if (scanResult.state === 'insufficientPromotionQuantity')
-      await this.#getUpdatedProductWithPromotion(scanResult, name, quantity);
+      await this.#getUpdatedProductWithPromotion(scanResult, product);
     if (scanResult.state === 'promotionStockInsufficient')
-      await this.#getUpdatedProductWithoutDiscount(scanResult, name, quantity);
+      await this.#getUpdatedProductWithoutDiscount(scanResult, product);
 
     if (scanResult.state === 'allPromotion') {
-      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity });
-      this.#finalPurchaseProducts.push({ name, quantity });
+      this.#freeGetProducts.push({ name: product.name, quantity: scanResult.freeQuantity, price: product.price });
+      this.#finalPurchaseProducts.push(product);
     }
     if (scanResult.state === 'nonPromotion') {
-      this.#nonPromotionProducts.push({ name, quantity: scanResult.insufficientQuantity });
-      this.#finalPurchaseProducts.push({ name, quantity });
+      this.#nonPromotionProducts.push({
+        name: product.name,
+        quantity: scanResult.insufficientQuantity,
+        price: product.price,
+      });
+      this.#finalPurchaseProducts.push(product);
     }
   }
 
-  async #getUpdatedProductWithPromotion(scanResult, name, quantity) {
+  async #getUpdatedProductWithPromotion(scanResult, { name, quantity, price }) {
     const answer = await this.#getValidatedInsufficientPromotionAnswer(scanResult.insufficientQuantity, name);
 
     if (answer === 'Y') {
-      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity + 1 });
-      this.#finalPurchaseProducts.push({ name, quantity: quantity + scanResult.insufficientQuantity });
+      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity + 1, price });
+      this.#finalPurchaseProducts.push({ name, quantity: quantity + scanResult.insufficientQuantity, price });
     } else {
-      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity });
-      this.#nonPromotionProducts.push({ name, quantity: scanResult.insufficientQuantity });
-      this.#finalPurchaseProducts.push({ name, quantity });
+      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity, price });
+      this.#nonPromotionProducts.push({ name, quantity: scanResult.insufficientQuantity, price });
+      this.#finalPurchaseProducts.push({ name, quantity, price });
     }
   }
 
-  async #getUpdatedProductWithoutDiscount(scanResult, name, quantity) {
+  async #getUpdatedProductWithoutDiscount(scanResult, { name, quantity, price }) {
     const answer = await this.#getValidatedPromotionStockInsufficientAnswer(scanResult.insufficientQuantity, name);
 
     if (answer === 'Y') {
-      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity });
-      this.#nonPromotionProducts.push({ name, quantity: scanResult.insufficientQuantity });
-      this.#finalPurchaseProducts.push({ name, quantity });
+      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity, price });
+      this.#nonPromotionProducts.push({ name, quantity: scanResult.insufficientQuantity, price });
+      this.#finalPurchaseProducts.push({ name, quantity, price });
     } else {
-      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity });
-      this.#finalPurchaseProducts.push({ name, quantity: quantity - scanResult.insufficientQuantity });
+      this.#freeGetProducts.push({ name, quantity: scanResult.freeQuantity, price });
+      this.#finalPurchaseProducts.push({ name, quantity: quantity - scanResult.insufficientQuantity, price });
     }
   }
 
@@ -76,11 +80,8 @@ class PurchaseResult {
     });
   }
 
-  getMembershipDiscountPrice(inventory, isMembershipDiscount) {
-    const priceSum = this.#nonPromotionProducts.reduce(
-      (prev, { name, quantity }) => prev + inventory[name].price * quantity,
-      0,
-    );
+  getMembershipDiscountPrice(isMembershipDiscount) {
+    const priceSum = this.#nonPromotionProducts.reduce((prev, { quantity, price }) => prev + price * quantity, 0);
 
     if (isMembershipDiscount) {
       const discountPrice = Math.floor(priceSum * 0.3);
@@ -90,35 +91,27 @@ class PurchaseResult {
     return 0;
   }
 
-  getTotalPrice(inventory) {
-    const priceSum = this.#finalPurchaseProducts.reduce(
-      (prev, { name, quantity }) => prev + inventory[name].price * quantity,
-      0,
-    );
+  getTotalPrice() {
+    const priceSum = this.#finalPurchaseProducts.reduce((prev, { quantity, price }) => prev + price * quantity, 0);
 
     return priceSum;
   }
 
   getTotalQuantity() {
-    const quantitySum = this.#finalPurchaseProducts.reduce((prev, { name, quantity }) => prev + quantity, 0);
+    const quantitySum = this.#finalPurchaseProducts.reduce((prev, { quantity }) => prev + quantity, 0);
 
     return quantitySum;
   }
 
-  getPromotionDiscountPrice(inventory) {
-    const priceSum = this.#freeGetProducts.reduce(
-      (prev, { name, quantity }) => prev + inventory[name].price * quantity,
-      0,
-    );
+  getPromotionDiscountPrice() {
+    const priceSum = this.#freeGetProducts.reduce((prev, { quantity, price }) => prev + price * quantity, 0);
 
     return priceSum;
   }
 
-  getFinalPurchasePrice(inventory, isMembershipDiscount) {
+  getFinalPurchasePrice(isMembershipDiscount) {
     return (
-      this.getTotalPrice(inventory) -
-      this.getPromotionDiscountPrice(inventory) -
-      this.getMembershipDiscountPrice(inventory, isMembershipDiscount)
+      this.getTotalPrice() - this.getPromotionDiscountPrice() - this.getMembershipDiscountPrice(isMembershipDiscount)
     );
   }
 

@@ -16,27 +16,23 @@ class Output {
     });
   }
 
-  static printReceipt(inventory, result, isMembershipDiscount) {
+  static printReceipt(result, isMembershipDiscount) {
     Console.print('===========W 편의점=============\n');
     Console.print('상품명		수량	금액\n');
-    this.#printPurchaseProducts(inventory, result.finalPurchaseProducts);
+    this.#printPurchaseProducts(result.finalPurchaseProducts);
     if (result.freeGetProducts.length) this.#printFreeProducts(result.freeGetProducts);
     Console.print('==============================');
+    Console.print(`총구매액\t\t${result.getTotalQuantity()}\t${numberToLocaleString(result.getTotalPrice())}\t`);
+    Console.print(`행사할인\t\t\t-${numberToLocaleString(result.getPromotionDiscountPrice())}\t`);
     Console.print(
-      `총구매액\t\t${result.getTotalQuantity()}\t${numberToLocaleString(result.getTotalPrice(inventory))}\t`,
+      `멤버십할인\t\t\t-${numberToLocaleString(result.getMembershipDiscountPrice(isMembershipDiscount))}\t`,
     );
-    Console.print(`행사할인\t\t\t-${numberToLocaleString(result.getPromotionDiscountPrice(inventory))}\t`);
-    Console.print(
-      `멤버십할인\t\t\t-${numberToLocaleString(result.getMembershipDiscountPrice(inventory, isMembershipDiscount))}\t`,
-    );
-    Console.print(
-      `내실돈\t\t\t${numberToLocaleString(result.getFinalPurchasePrice(inventory, isMembershipDiscount))}\t`,
-    );
+    Console.print(`내실돈\t\t\t${numberToLocaleString(result.getFinalPurchasePrice(isMembershipDiscount))}\t`);
   }
 
-  static #printPurchaseProducts(inventory, purchaseProducts) {
-    purchaseProducts.forEach(({ name, quantity }) => {
-      Console.print(`${name}\t\t${quantity}\t${numberToLocaleString(inventory[name].price * quantity)}\t`);
+  static #printPurchaseProducts(purchaseProducts) {
+    purchaseProducts.forEach(({ name, quantity, price }) => {
+      Console.print(`${name}\t\t${quantity}\t${numberToLocaleString(price * quantity)}\t`);
     });
   }
 

@@ -25,7 +25,7 @@ class StoreController {
 
     const isMembershipDiscount = await this.#getValidatedMembershipDiscount();
 
-    Output.printReceipt(this.#convenienceStore.inventory, this.#purchaseResult, isMembershipDiscount);
+    Output.printReceipt(this.#purchaseResult, isMembershipDiscount);
 
     this.#restart();
   }
@@ -49,22 +49,25 @@ class StoreController {
       .split(',')
       .map((product) => {
         validateProductInputForm(product);
-        return product.slice(1, -1);
+        return product.slice(1, -1).split('-');
       })
-      .map((product) => product.split('-'))
-      .map(([name, quantity]) => ({ name: name.trim(), quantity: Number(quantity) }));
+      .map(([name, quantity]) => ({
+        name: name.trim(),
+        quantity: Number(quantity),
+        price: this.#convenienceStore.inventory[name].price,
+      }));
 
     return purchaseProducts;
   }
 
   async #scanningProductsWithPOS(products) {
     await products.reduce(
-      (promiseChain, { name, quantity }) =>
+      (promiseChain, product) =>
         promiseChain.then(async () => {
-          const productInventory = this.#convenienceStore.inventory[name];
-          const scanResult = this.#posMachine.scanningProduct(productInventory, quantity);
+          const productInventory = this.#convenienceStore.inventory[product.name];
+          const scanResult = this.#posMachine.scanningProduct(productInventory, product.quantity);
 
-          await this.#purchaseResult.updateProductResult(scanResult, name, quantity);
+          await this.#purchaseResult.updateProductResult(scanResult, product);
         }),
       Promise.resolve(),
     );
