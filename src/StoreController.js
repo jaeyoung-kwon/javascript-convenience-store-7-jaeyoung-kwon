@@ -1,6 +1,6 @@
 import ConvenienceStore from './ConvenienceStore.js';
 import { validateYNAnswer } from './lib/util/input.js';
-import { validateProductInputForm, validatePurchaseProducts } from './lib/util/validation.js';
+import { validateProductInputForm, validatePurchaseProduct } from './lib/util/validation.js';
 import POSMachine from './POSMachine.js';
 import PurchaseResult from './PurchaseResult.js';
 import Input from './View/Input.js';
@@ -38,25 +38,24 @@ class StoreController {
 
   #getValidatedPurchaseProducts() {
     return Input.getPurchaseProducts()((input) => {
-      const parsedPurchaseProducts = this.#parsePurchaseProducts(input);
-      validatePurchaseProducts(parsedPurchaseProducts, this.#convenienceStore.inventory);
+      const purchaseProducts = this.#parseWithValidatePurchaseProducts(input);
 
-      return parsedPurchaseProducts;
+      return purchaseProducts;
     });
   }
 
-  #parsePurchaseProducts(purchaseProductsInput) {
-    const purchaseProducts = purchaseProductsInput
-      .split(',')
-      .map((product) => {
-        validateProductInputForm(product);
-        return product.slice(1, -1).split('-');
-      })
-      .map(([name, quantity]) => ({
+  #parseWithValidatePurchaseProducts(purchaseProductsInput) {
+    const purchaseProducts = purchaseProductsInput.split(',').map((product) => {
+      validateProductInputForm(product);
+      const [name, quantity] = product.slice(1, -1).split('-');
+      validatePurchaseProduct(name, quantity, this.#convenienceStore.inventory[name]);
+
+      return {
         name: name.trim(),
         quantity: Number(quantity),
         price: this.#convenienceStore.inventory[name].price,
-      }));
+      };
+    });
 
     return purchaseProducts;
   }
