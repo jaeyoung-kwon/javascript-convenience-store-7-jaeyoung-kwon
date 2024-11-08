@@ -1,6 +1,5 @@
 import { Console } from '@woowacourse/mission-utils';
 import { numberToLocaleString } from '../lib/util/number.js';
-import { formatReceiptString } from '../lib/util/input.js';
 
 class Output {
   static printWelcomeMessage() {
@@ -31,28 +30,36 @@ class Output {
 
   static #printPurchaseProducts(purchaseProducts) {
     purchaseProducts.forEach(({ name, quantity, price }) => {
-      Console.print(formatReceiptString({ name, quantity, price: numberToLocaleString(price * quantity) }));
+      Console.print(this.#formatReceiptString({ name, quantity, price: numberToLocaleString(price * quantity) }));
     });
   }
 
   static #printFreeProducts(freeProducts) {
     Console.print('===========증	정=============');
     freeProducts.forEach(({ name, quantity }) => {
-      Console.print(formatReceiptString({ name, quantity }));
+      Console.print(this.#formatReceiptString({ name, quantity }));
     });
   }
 
   static #printPurchaseResult(totalQuantity, price) {
     Console.print('==============================');
-    Console.print(formatReceiptString({ name: '총구매액', quantity: totalQuantity, price: price.totalPrice }));
-    Console.print(formatReceiptString({ name: '행사할인', price: price.promotionDiscountPrice }));
-    Console.print(formatReceiptString({ name: '멤버십할인', price: price.membershipDiscountPrice }));
+    Console.print(this.#formatReceiptString({ name: '총구매액', quantity: totalQuantity, price: price.totalPrice }));
+    Console.print(this.#formatReceiptString({ name: '행사할인', price: price.promotionDiscountPrice }));
+    Console.print(this.#formatReceiptString({ name: '멤버십할인', price: price.membershipDiscountPrice }));
     Console.print(
-      formatReceiptString({
+      this.#formatReceiptString({
         name: '내실돈',
         price: price.totalPrice - price.promotionDiscountPrice - price.membershipDiscountPrice,
       }),
     );
+  }
+
+  static #formatReceiptString({ name, quantity, price }) {
+    if (!quantity) return `${name.padEnd(8, ' ')}\t\t${numberToLocaleString(price).padEnd(10, ' ')}`;
+
+    if (!price) return `${name.padEnd(8, ' ')}\t${numberToLocaleString(quantity).padEnd(4, ' ')}`;
+
+    return `${name.padEnd(8, ' ')}\t${numberToLocaleString(quantity).padEnd(4, ' ')}\t${numberToLocaleString(price).padEnd(10, ' ')}`;
   }
 }
 
