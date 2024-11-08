@@ -47,7 +47,7 @@ class ConvenienceStore {
     if (promotion.trim() === 'null')
       return {
         price: Number(price),
-        promotion: false,
+        promotion: null,
         regularStock: Number(quantity),
         promotionStock: 0,
       };
