@@ -42,16 +42,13 @@ class Output {
   }
 
   static #printPurchaseResult(totalQuantity, price) {
+    const finalPurchasePrice = price.totalPrice - price.promotionDiscountPrice - price.membershipDiscountPrice;
+
     Console.print('==============================');
     Console.print(this.#formatReceiptString({ name: '총구매액', quantity: totalQuantity, price: price.totalPrice }));
     Console.print(this.#formatReceiptString({ name: '행사할인', price: -1 * price.promotionDiscountPrice }));
     Console.print(this.#formatReceiptString({ name: '멤버십할인', price: -1 * price.membershipDiscountPrice }));
-    Console.print(
-      this.#formatReceiptString({
-        name: '내실돈',
-        price: price.totalPrice - price.promotionDiscountPrice - price.membershipDiscountPrice,
-      }),
-    );
+    Console.print(this.#formatReceiptString({ name: '내실돈', price: finalPurchasePrice }));
   }
 
   static #formatReceiptString({ name, quantity, price }) {
