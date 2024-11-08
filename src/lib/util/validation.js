@@ -15,6 +15,13 @@ export const validateProductInputForm = (productString) => {
   if (!productString.endsWith(']')) throwWoowaError(ERROR_MESSAGE.invalidInputForm);
 };
 
-export const validateYNInputForm = (input) => {
+const validateYNInputForm = (input) => {
   if (input !== 'Y' && input !== 'N') throwWoowaError(ERROR_MESSAGE.invalidInput);
+};
+
+export const validateYNAnswer = (answer) => {
+  validateYNInputForm(answer);
+
+  if (answer === 'Y') return true;
+  return false;
 };

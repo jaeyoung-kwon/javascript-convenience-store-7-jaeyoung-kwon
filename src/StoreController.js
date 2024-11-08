@@ -1,6 +1,5 @@
 import InventoryStore from './InventoryStore.js';
-import { validateYNAnswer } from './lib/util/input.js';
-import { validateProductInputForm, validatePurchaseProduct } from './lib/util/validation.js';
+import { validateProductInputForm, validatePurchaseProduct, validateYNAnswer } from './lib/util/validation.js';
 import POSMachine from './POSMachine.js';
 import PurchaseResult from './PurchaseResult.js';
 import Input from './View/Input.js';
