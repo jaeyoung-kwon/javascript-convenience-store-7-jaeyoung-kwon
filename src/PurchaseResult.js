@@ -81,7 +81,20 @@ class PurchaseResult {
     });
   }
 
-  getMembershipDiscountPrice(isMembershipDiscount) {
+  getSummary(isMembershipDiscount) {
+    return {
+      finalPurchaseProducts: [...this.#finalPurchaseProducts],
+      freeGetProducts: [...this.#freeGetProducts],
+      totalQuantity: this.#finalPurchaseProducts.reduce((prev, { quantity }) => prev + quantity, 0),
+      price: {
+        totalPrice: this.#sumPrice(this.#finalPurchaseProducts),
+        promotionDiscountPrice: this.#sumPrice(this.#freeGetProducts),
+        membershipDiscountPrice: this.#getMembershipDiscountPrice(isMembershipDiscount),
+      },
+    };
+  }
+
+  #getMembershipDiscountPrice(isMembershipDiscount) {
     const nonPromotionProductsTotalPrice = this.#sumPrice(this.#nonPromotionProducts);
 
     if (isMembershipDiscount) {
@@ -92,32 +105,8 @@ class PurchaseResult {
     return 0;
   }
 
-  getPromotionDiscountPrice() {
-    return this.#sumPrice(this.#freeGetProducts);
-  }
-
-  getTotalPrice() {
-    return this.#sumPrice(this.#finalPurchaseProducts);
-  }
-
-  getTotalQuantity() {
-    const quantitySum = this.#finalPurchaseProducts.reduce((prev, { quantity }) => prev + quantity, 0);
-
-    return quantitySum;
-  }
-
-  getFinalPurchasePrice(isMembershipDiscount) {
-    return (
-      this.getTotalPrice() - this.getPromotionDiscountPrice() - this.getMembershipDiscountPrice(isMembershipDiscount)
-    );
-  }
-
   get finalPurchaseProducts() {
     return [...this.#finalPurchaseProducts];
-  }
-
-  get freeGetProducts() {
-    return [...this.#freeGetProducts];
   }
 
   clearResult() {

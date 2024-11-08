@@ -1,5 +1,6 @@
 import { Console } from '@woowacourse/mission-utils';
 import { numberToLocaleString } from '../lib/util/number.js';
+import { formatReceiptString } from '../lib/util/input.js';
 
 class Output {
   static printWelcomeMessage() {
@@ -16,35 +17,42 @@ class Output {
     });
   }
 
-  static printReceipt(result, isMembershipDiscount) {
-    Console.print('===========W 편의점=============\n');
-    Console.print('상품명		수량	금액\n');
-    this.#printPurchaseProducts(result.finalPurchaseProducts);
-    if (result.freeGetProducts.length) this.#printFreeProducts(result.freeGetProducts);
-    Console.print('==============================');
-    Console.print(`총구매액\t\t${result.getTotalQuantity()}\t${numberToLocaleString(result.getTotalPrice())}\t`);
-    Console.print(`행사할인\t\t\t-${numberToLocaleString(result.getPromotionDiscountPrice())}\t`);
-    Console.print(
-      `멤버십할인\t\t\t-${numberToLocaleString(result.getMembershipDiscountPrice(isMembershipDiscount))}\t`,
-    );
-    Console.print(`내실돈\t\t\t${numberToLocaleString(result.getFinalPurchasePrice(isMembershipDiscount))}\t`);
+  static #getStockMessage(stock) {
+    return stock > 0 ? `${stock}개` : '재고 없음';
+  }
+
+  static printReceipt({ finalPurchaseProducts, freeGetProducts, totalQuantity, price }) {
+    Console.print('===========W 편의점=============');
+    Console.print(`상품명\t\t수량\t금액`);
+    this.#printPurchaseProducts(finalPurchaseProducts);
+    if (freeGetProducts.length) this.#printFreeProducts(freeGetProducts);
+    this.#printPurchaseResult(totalQuantity, price);
   }
 
   static #printPurchaseProducts(purchaseProducts) {
     purchaseProducts.forEach(({ name, quantity, price }) => {
-      Console.print(`${name}\t\t${quantity}\t${numberToLocaleString(price * quantity)}\t`);
+      Console.print(formatReceiptString({ name, quantity, price: numberToLocaleString(price * quantity) }));
     });
   }
 
   static #printFreeProducts(freeProducts) {
     Console.print('===========증	정=============');
     freeProducts.forEach(({ name, quantity }) => {
-      Console.print(`${name}\t\t${quantity}\t`);
+      Console.print(formatReceiptString({ name, quantity }));
     });
   }
 
-  static #getStockMessage(stock) {
-    return stock > 0 ? `${stock}개` : '재고 없음';
+  static #printPurchaseResult(totalQuantity, price) {
+    Console.print('==============================');
+    Console.print(formatReceiptString({ name: '총구매액', quantity: totalQuantity, price: price.totalPrice }));
+    Console.print(formatReceiptString({ name: '행사할인', price: price.promotionDiscountPrice }));
+    Console.print(formatReceiptString({ name: '멤버십할인', price: price.membershipDiscountPrice }));
+    Console.print(
+      formatReceiptString({
+        name: '내실돈',
+        price: price.totalPrice - price.promotionDiscountPrice - price.membershipDiscountPrice,
+      }),
+    );
   }
 }
 

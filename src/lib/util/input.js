@@ -1,5 +1,5 @@
 import { Console } from '@woowacourse/mission-utils';
-import { throwWoowaError } from './error.js';
+import { numberToLocaleString } from './number.js';
 
 export const repeatUtilComplete = (message) => async (validationCallback) => {
   try {
@@ -12,6 +12,10 @@ export const repeatUtilComplete = (message) => async (validationCallback) => {
   }
 };
 
-export const validateYNInputForm = (input) => {
-  if (input !== 'Y' && input !== 'N') throwWoowaError('잘못된 입력입니다. 다시 입력해 주세요.');
+export const formatReceiptString = ({ name, quantity, price }) => {
+  if (!quantity) return `${name.padEnd(8, ' ')}\t\t${numberToLocaleString(price).padEnd(10, ' ')}`;
+
+  if (!price) return `${name.padEnd(8, ' ')}\t${numberToLocaleString(quantity).padEnd(4, ' ')}`;
+
+  return `${name.padEnd(8, ' ')}\t${numberToLocaleString(quantity).padEnd(4, ' ')}\t${numberToLocaleString(price).padEnd(10, ' ')}`;
 };

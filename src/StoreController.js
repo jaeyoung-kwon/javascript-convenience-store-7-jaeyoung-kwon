@@ -25,7 +25,7 @@ class StoreController {
 
     const isMembershipDiscount = await this.#getValidatedMembershipDiscount();
 
-    Output.printReceipt(this.#purchaseResult, isMembershipDiscount);
+    Output.printReceipt(this.#purchaseResult.getSummary(isMembershipDiscount));
 
     this.#restart();
   }
