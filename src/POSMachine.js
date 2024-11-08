@@ -38,9 +38,9 @@ class POSMachine {
   }
 
   scanningProduct(productInventory, purchaseQuantity) {
-    if (!productInventory.promotion) return this.#createNonPromotionResult(purchaseQuantity);
-
     const promotion = this.#promotions[productInventory.promotion];
+    if (!promotion) return this.#createNonPromotionResult(purchaseQuantity);
+
     const totalPromotion = promotion.buy + promotion.get;
     const maxPromotionQuantity = Math.floor(productInventory.promotionStock / totalPromotion) * totalPromotion;
 
