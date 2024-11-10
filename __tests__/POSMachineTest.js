@@ -1,6 +1,6 @@
 import { DateTimes } from '@woowacourse/mission-utils';
 import * as fs from 'fs';
-import POSMachine from '../src/POSMachine.js';
+import POSMachine from '../src/Model/POSMachine.js';
 
 jest.mock('fs');
 

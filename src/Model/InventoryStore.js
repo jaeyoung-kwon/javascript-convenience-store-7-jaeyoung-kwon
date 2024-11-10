@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { copyObject } from './lib/util/object.js';
+import { copyObject } from '../lib/util/object.js';
 
 class InventoryStore {
   #inventory;

@@ -1,4 +1,4 @@
-import InventoryStore from '../src/InventoryStore.js';
+import InventoryStore from '../src/Model/InventoryStore.js';
 import Output from '../src/View/Output.js';
 import { expectLogContains, getLogSpy, getOutput } from './ApplicationTest.js';
 

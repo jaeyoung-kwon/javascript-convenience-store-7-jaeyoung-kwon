@@ -1,4 +1,4 @@
-import PurchaseResult from '../src/PurchaseResult.js';
+import PurchaseResult from '../src/Model/PurchaseResult.js';
 import Input from '../src/View/Input.js';
 
 jest.mock('../src/View/Input.js');

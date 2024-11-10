@@ -1,5 +1,5 @@
-import { validateYNAnswer } from './lib/util/validation.js';
-import Input from './View/Input.js';
+import { validateYNAnswer } from '../lib/util/validation.js';
+import Input from '../View/Input.js';
 
 class PurchaseResult {
   #freeGetProducts;
