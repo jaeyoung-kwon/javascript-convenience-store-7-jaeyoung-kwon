@@ -44,16 +44,18 @@ class POSMachine {
     const totalPromotion = promotion.buy + promotion.get;
     const maxPromotionQuantity = Math.floor(promotionStock / totalPromotion) * totalPromotion;
 
-    if (this.#hasInsufficientPromotionQuantity(purchaseQuantity, totalPromotion, maxPromotionQuantity))
-      return this.#createInsufficientPromotionQuantityResult(purchaseQuantity, totalPromotion);
+    if (this.#hasInsufficientPromotionQuantity(purchaseQuantity, totalPromotion, maxPromotionQuantity, promotion.get))
+      return this.#createInsufficientPromotionQuantityResult(purchaseQuantity, totalPromotion, promotion.get);
     if (this.#isPromotionStockInsufficient(purchaseQuantity, promotionStock, maxPromotionQuantity))
       return this.#createPromotionStockInsufficientResult(purchaseQuantity, totalPromotion, maxPromotionQuantity);
-    return this.#createAllPromotionResult(purchaseQuantity, totalPromotion);
+    if (this.#isAllPromotionStock(purchaseQuantity, totalPromotion))
+      return this.#createAllPromotionResult(purchaseQuantity, totalPromotion);
+    return this.#createNonIssueResult(purchaseQuantity, totalPromotion);
   }
 
-  #hasInsufficientPromotionQuantity(purchaseQuantity, totalPromotion, maxPromotionQuantity) {
+  #hasInsufficientPromotionQuantity(purchaseQuantity, totalPromotion, maxPromotionQuantity, promotionFreeQuantity) {
     if (maxPromotionQuantity < purchaseQuantity) return false;
-    if (purchaseQuantity % totalPromotion === 0) return false;
+    if ((purchaseQuantity + promotionFreeQuantity) % totalPromotion !== 0) return false;
 
     return true;
   }
@@ -65,14 +67,20 @@ class POSMachine {
     return true;
   }
 
+  #isAllPromotionStock(purchaseQuantity, totalPromotion) {
+    if (purchaseQuantity % totalPromotion !== 0) return false;
+
+    return true;
+  }
+
   #createNonPromotionResult(purchaseQuantity) {
     return { state: 'nonPromotion', insufficientQuantity: purchaseQuantity, freeQuantity: 0 };
   }
 
-  #createInsufficientPromotionQuantityResult(purchaseQuantity, totalPromotion) {
+  #createInsufficientPromotionQuantityResult(purchaseQuantity, totalPromotion, promotionFreeQuantity) {
     return {
       state: 'insufficientPromotionQuantity',
-      insufficientQuantity: totalPromotion - (purchaseQuantity % totalPromotion),
+      insufficientQuantity: promotionFreeQuantity,
       freeQuantity: Math.floor(purchaseQuantity / totalPromotion),
     };
   }
@@ -87,6 +95,14 @@ class POSMachine {
 
   #createAllPromotionResult(purchaseQuantity, totalPromotion) {
     return { state: 'allPromotion', insufficientQuantity: 0, freeQuantity: purchaseQuantity / totalPromotion };
+  }
+
+  #createNonIssueResult(purchaseQuantity, totalPromotion) {
+    return {
+      state: 'nonIssue',
+      insufficientQuantity: purchaseQuantity % totalPromotion,
+      freeQuantity: Math.floor(purchaseQuantity / totalPromotion),
+    };
   }
 }
 
