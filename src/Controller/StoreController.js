@@ -33,17 +33,33 @@ class StoreController {
   }
 
   #getValidatedPurchaseProducts() {
-    return Input.getPurchaseProducts()((input) =>
-      input.split(',').map((product) => {
-        validateProductInputForm(product);
-        const [name, quantity] = product.slice(1, -1).split('-');
-        validatePurchaseProduct(name, quantity, this.#inventoryStore.inventory[name]);
-        return this.#parseProduct(name, quantity);
-      }),
-    );
+    return Input.getPurchaseProducts()((input) => {
+      const parsedProducts = this.#parsePurchaseProduct(input);
+
+      return Object.values(parsedProducts);
+    });
   }
 
-  #parseProduct(name, quantity) {
+  #parsePurchaseProduct(input) {
+    return input.split(',').reduce((acc, product) => {
+      validateProductInputForm(product);
+      const [name, quantity] = product.slice(1, -1).split('-');
+      validatePurchaseProduct(name, quantity, this.#inventoryStore.inventory[name]);
+      this.#addOrUpdateValidatedProduct(acc, name, quantity);
+
+      return acc;
+    }, {});
+  }
+
+  #addOrUpdateValidatedProduct(acc, name, quantity) {
+    if (acc[name]) {
+      acc[name].quantity += Number(quantity);
+    } else {
+      acc[name] = this.#createProduct(name, quantity);
+    }
+  }
+
+  #createProduct(name, quantity) {
     return {
       name: name.trim(),
       quantity: Number(quantity),
