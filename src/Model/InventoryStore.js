@@ -3,8 +3,10 @@ import { copyObject } from '../lib/util/object.js';
 
 class InventoryStore {
   #inventory;
+  #totalQuantity;
 
   constructor() {
+    this.#totalQuantity = 0;
     this.#readInventory();
   }
 
@@ -26,6 +28,7 @@ class InventoryStore {
   }
 
   #createOrUpdateInventoryProduct(existingProduct, price, quantity, promotion) {
+    this.#totalQuantity += Number(quantity);
     if (existingProduct) return this.#updateInventoryProduct(existingProduct, quantity, promotion);
 
     return this.#createInventoryProduct(price, quantity, promotion);
@@ -50,6 +53,7 @@ class InventoryStore {
 
   updateInventory(purchaseProducts) {
     purchaseProducts.forEach(({ name, quantity }) => {
+      this.#totalQuantity -= quantity;
       const remainingQuantity = this.#decreasePromotionStock(name, quantity);
       this.#decreaseRegularStock(name, remainingQuantity);
     });
@@ -68,6 +72,10 @@ class InventoryStore {
     if (quantity > 0 && this.#inventory[name].regularStock >= quantity) {
       this.#inventory[name].regularStock -= quantity;
     }
+  }
+
+  canRestart() {
+    return this.#totalQuantity !== 0;
   }
 }
 

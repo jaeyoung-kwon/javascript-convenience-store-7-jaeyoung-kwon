@@ -24,7 +24,7 @@ class StoreController {
     const isMembershipDiscount = await this.#getValidatedMembershipDiscount();
 
     this.#printReceipt(isMembershipDiscount);
-    await this.#restartWithAnswer();
+    await this.#finishPurchase();
   }
 
   #printInit() {
@@ -94,13 +94,21 @@ class StoreController {
     );
   }
 
+  async #finishPurchase() {
+    this.#inventoryStore.updateInventory(this.#purchaseResult.finalPurchaseProducts);
+    this.#purchaseResult.clearResult();
+
+    if (!this.#inventoryStore.canRestart()) {
+      Output.printAllSoldOutMessage();
+      return;
+    }
+    await this.#restartWithAnswer();
+  }
+
   async #restartWithAnswer() {
     const isRestart = await this.#getValidatedRestart();
 
     if (isRestart) {
-      this.#inventoryStore.updateInventory(this.#purchaseResult.finalPurchaseProducts);
-      this.#purchaseResult.clearResult();
-
       await this.init();
     }
   }

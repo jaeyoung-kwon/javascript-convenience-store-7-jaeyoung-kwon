@@ -61,6 +61,10 @@ class Output {
 
     return `${name.padEnd(8, ' ')}\t${numberToLocaleString(quantity).padEnd(4, ' ')}\t${numberToLocaleString(price).padEnd(10, ' ')}`;
   }
+
+  static printAllSoldOutMessage() {
+    Console.print('\n현재 보유하고 있는 상품이 모두 소진되었습니다.\n감사합니다.');
+  }
 }
 
 export default Output;
