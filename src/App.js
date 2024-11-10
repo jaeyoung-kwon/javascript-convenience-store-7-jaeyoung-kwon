@@ -1,4 +1,4 @@
-import StoreController from './StoreController.js';
+import StoreController from './Controller/StoreController.js';
 
 class App {
   async run() {

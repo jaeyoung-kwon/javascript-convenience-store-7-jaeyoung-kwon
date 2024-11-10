@@ -1,9 +1,9 @@
-import InventoryStore from './InventoryStore.js';
-import { validateProductInputForm, validatePurchaseProduct, validateYNAnswer } from './lib/util/validation.js';
-import POSMachine from './POSMachine.js';
-import PurchaseResult from './PurchaseResult.js';
-import Input from './View/Input.js';
-import Output from './View/Output.js';
+import InventoryStore from '../InventoryStore.js';
+import { validateProductInputForm, validatePurchaseProduct, validateYNAnswer } from '../lib/util/validation.js';
+import POSMachine from '../POSMachine.js';
+import PurchaseResult from '../PurchaseResult.js';
+import Input from '../View/Input.js';
+import Output from '../View/Output.js';
 
 class StoreController {
   #inventoryStore;
