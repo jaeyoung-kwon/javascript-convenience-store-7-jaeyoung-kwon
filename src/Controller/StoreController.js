@@ -24,7 +24,7 @@ class StoreController {
     const isMembershipDiscount = await this.#getValidatedMembershipDiscount();
 
     this.#printReceipt(isMembershipDiscount);
-    this.#restartWithAnswer();
+    await this.#restartWithAnswer();
   }
 
   #printInit() {
@@ -78,10 +78,6 @@ class StoreController {
     );
   }
 
-  #getValidatedRestart() {
-    return Input.getRestartAnswer()(validateYNAnswer);
-  }
-
   async #restartWithAnswer() {
     const isRestart = await this.#getValidatedRestart();
 
@@ -91,6 +87,10 @@ class StoreController {
 
       await this.init();
     }
+  }
+
+  #getValidatedRestart() {
+    return Input.getRestartAnswer()(validateYNAnswer);
   }
 }
 
