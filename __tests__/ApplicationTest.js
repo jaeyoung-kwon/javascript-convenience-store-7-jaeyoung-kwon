@@ -46,7 +46,7 @@ const expectLogContainsWithoutSpacesAndEquals = (received, expects) => {
   });
 };
 
-const runExceptions = async ({ inputs = [], inputsToTerminate = [], expectedErrorMessage = '' }) => {
+export const runExceptions = async ({ inputs = [], inputsToTerminate = [], expectedErrorMessage = '' }) => {
   // given
   const logSpy = getLogSpy();
   mockQuestions([...inputs, ...inputsToTerminate]);
@@ -79,7 +79,7 @@ const run = async ({ inputs = [], inputsToTerminate = [], expected = [], expecte
   }
 };
 
-const INPUTS_TO_TERMINATE = ['[비타민워터-1]', 'N', 'N'];
+export const INPUTS_TO_TERMINATE = ['[비타민워터-1]', 'N', 'N'];
 
 describe('편의점', () => {
   afterEach(() => {
