@@ -1,5 +1,10 @@
+import {
+  validateProductInputForm,
+  validateProductName,
+  validateProductQuantity,
+  validateYNAnswer,
+} from '../lib/util/validation.js';
 import InventoryStore from '../Model/InventoryStore.js';
-import { validateProductInputForm, validatePurchaseProduct, validateYNAnswer } from '../lib/util/validation.js';
 import POSMachine from '../Model/POSMachine.js';
 import PurchaseResult from '../Model/PurchaseResult.js';
 import Input from '../View/Input.js';
@@ -35,6 +40,7 @@ class StoreController {
   #getValidatedPurchaseProducts() {
     return Input.getPurchaseProducts()((input) => {
       const parsedProducts = this.#parsePurchaseProduct(input);
+      validateProductQuantity(parsedProducts, this.#inventoryStore.inventory);
 
       return Object.values(parsedProducts);
     });
@@ -44,7 +50,7 @@ class StoreController {
     return input.split(',').reduce((acc, product) => {
       validateProductInputForm(product);
       const [name, quantity] = product.slice(1, -1).split('-');
-      validatePurchaseProduct(name, quantity, this.#inventoryStore.inventory[name]);
+      validateProductName(name, quantity, this.#inventoryStore.inventory[name]);
       this.#addOrUpdateValidatedProduct(acc, name, quantity);
 
       return acc;
