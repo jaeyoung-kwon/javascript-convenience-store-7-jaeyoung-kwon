@@ -17,12 +17,10 @@ class PurchaseResult {
       await this.#updateProductInsufficientPromotion(scanResult.insufficientQuantity, scanResult.freeQuantity, product);
     if (scanResult.state === 'promotionStockInsufficient')
       await this.#updateProductWithoutDiscount(scanResult.insufficientQuantity, scanResult.freeQuantity, product);
-
-    if (scanResult.state === 'allPromotion') this.#updateProductAtAllPromotion(scanResult.freeQuantity, product);
-    if (scanResult.state === 'nonPromotion')
-      this.#updateProductAtNonPromotion(scanResult.insufficientQuantity, product);
+    if (scanResult.state === 'allPromotion') this.#updateProductAllPromotion(scanResult.freeQuantity, product);
+    if (scanResult.state === 'nonPromotion') this.#updateProductNonPromotion(scanResult.insufficientQuantity, product);
     if (scanResult.state === 'nonIssue')
-      this.#updateProductAtNonIssue(scanResult.insufficientQuantity, scanResult.freeQuantity, product);
+      this.#updateProductNonIssue(scanResult.insufficientQuantity, scanResult.freeQuantity, product);
   }
 
   async #updateProductInsufficientPromotion(insufficientQuantity, freeQuantity, product) {
@@ -43,17 +41,17 @@ class PurchaseResult {
     }
   }
 
-  #updateProductAtAllPromotion(freeQuantity, { name, quantity, price }) {
+  #updateProductAllPromotion(freeQuantity, { name, quantity, price }) {
     if (freeQuantity > 0) this.#addFreeProduct(name, freeQuantity, price);
     this.#addFinalPurchaseProduct(name, quantity, price);
   }
 
-  #updateProductAtNonPromotion(insufficientQuantity, { name, quantity, price }) {
+  #updateProductNonPromotion(insufficientQuantity, { name, quantity, price }) {
     this.#addNonPromotionProduct(name, insufficientQuantity, price);
     this.#addFinalPurchaseProduct(name, quantity, price);
   }
 
-  #updateProductAtNonIssue(insufficientQuantity, freeQuantity, { name, quantity, price }) {
+  #updateProductNonIssue(insufficientQuantity, freeQuantity, { name, quantity, price }) {
     if (freeQuantity > 0) this.#addFreeProduct(name, freeQuantity, price);
     this.#addNonPromotionProduct(name, insufficientQuantity, price);
     this.#addFinalPurchaseProduct(name, quantity, price);
