@@ -42,8 +42,12 @@ class POSMachine {
 
   #evaluatePromotion(purchaseQuantity, promotionStock, promotion) {
     const totalPromotion = promotion.buy + promotion.get;
-    const maxPromotionQuantity = Math.floor(promotionStock / totalPromotion) * totalPromotion;
 
+    return this.#selectPromotionResult(purchaseQuantity, totalPromotion, promotion, promotionStock);
+  }
+
+  #selectPromotionResult(purchaseQuantity, totalPromotion, promotion, promotionStock) {
+    const maxPromotionQuantity = Math.floor(promotionStock / totalPromotion) * totalPromotion;
     if (this.#hasInsufficientPromotionQuantity(purchaseQuantity, totalPromotion, maxPromotionQuantity, promotion.get))
       return this.#createInsufficientPromotionQuantityResult(purchaseQuantity, totalPromotion, promotion.get);
     if (this.#isPromotionStockInsufficient(purchaseQuantity, promotionStock, maxPromotionQuantity))
