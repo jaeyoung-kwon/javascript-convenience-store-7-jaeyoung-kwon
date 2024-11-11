@@ -54,9 +54,10 @@ class StoreController {
   #addOrUpdateValidatedProduct(acc, name, quantity) {
     if (acc[name]) {
       acc[name].quantity += Number(quantity);
-    } else {
-      acc[name] = this.#createProduct(name, quantity);
+      return;
     }
+
+    acc[name] = this.#createProduct(name, quantity);
   }
 
   #createProduct(name, quantity) {

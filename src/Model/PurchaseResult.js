@@ -27,18 +27,20 @@ class PurchaseResult {
     const answer = await this.#getValidatedInsufficientPromotionAnswer(insufficientQuantity, product.name);
     if (answer) {
       this.#addProductWithInsufficientPromotion(insufficientQuantity, freeQuantity, product);
-    } else {
-      this.#addProductWithoutInsufficientPromotion(insufficientQuantity, freeQuantity, product);
+      return;
     }
+
+    this.#addProductWithoutInsufficientPromotion(insufficientQuantity, freeQuantity, product);
   }
 
   async #updateProductWithoutDiscount(insufficientQuantity, freeQuantity, product) {
     const answer = await this.#getValidatedPromotionStockInsufficientAnswer(insufficientQuantity, product.name);
     if (answer) {
       this.#addProductWithKeepProducts(insufficientQuantity, freeQuantity, product);
-    } else {
-      this.#addProductWithoutKeepProducts(insufficientQuantity, freeQuantity, product);
+      return;
     }
+
+    this.#addProductWithoutKeepProducts(insufficientQuantity, freeQuantity, product);
   }
 
   #updateProductAllPromotion(freeQuantity, { name, quantity, price }) {
