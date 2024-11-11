@@ -10,8 +10,10 @@ export const validateProductQuantity = (products, inventory) => {
   });
 };
 
-export const validateProductName = (name, quantity, inventoryProduct) => {
+export const validateProductNameAndQuantity = (name, quantity, inventoryProduct) => {
   if (!name || !quantity) throwWoowaError(ERROR_MESSAGE.invalidInputForm);
+
+  if (quantity <= 0) throwWoowaError(ERROR_MESSAGE.invalidInput);
 
   if (!inventoryProduct) throwWoowaError(ERROR_MESSAGE.invalidProductName);
 };

@@ -1,6 +1,6 @@
 import {
   validateProductInputForm,
-  validateProductName,
+  validateProductNameAndQuantity,
   validateProductQuantity,
   validateYNAnswer,
 } from '../lib/util/validation.js';
@@ -50,7 +50,7 @@ class StoreController {
     return input.split(',').reduce((acc, product) => {
       validateProductInputForm(product);
       const [name, quantity] = product.slice(1, -1).split('-');
-      validateProductName(name, quantity, this.#inventoryStore.inventory[name]);
+      validateProductNameAndQuantity(name, quantity, this.#inventoryStore.inventory[name]);
       this.#addOrUpdateValidatedProduct(acc, name, quantity);
 
       return acc;
